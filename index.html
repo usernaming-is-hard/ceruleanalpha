@@ -276,11 +276,11 @@
 
         .progress-container {
             width: 100%;
-            height: 8px;
+            height: 12px; /* 增粗进度条 */
             background-color: rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
+            border-radius: 6px;
             overflow: hidden;
-            margin: 15px 0;
+            margin: 20px 0;
         }
 
         [data-theme="dark"] .progress-container {
@@ -290,7 +290,7 @@
         .progress-bar {
             height: 100%;
             background-color: var(--primary-color);
-            border-radius: 4px;
+            border-radius: 6px;
             transition: width 0.5s ease;
             width: 0%;
         }
@@ -371,12 +371,9 @@
             margin: 20px 0;
         }
 
+        /* 移除计时器进度条的文字描述 */
         .timer-progress-info {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            color: var(--secondary-text);
-            font-size: 14px;
+            display: none;
         }
 
         @media (max-width: 1200px) {
@@ -462,9 +459,11 @@
             <div class="timer-display" id="timerDisplay">00:00:00</div>
             
             <div class="timer-progress-container">
+                <div class="section-title">进度</div>
                 <div class="progress-container">
                     <div class="progress-bar" id="timerProgress"></div>
                 </div>
+                <!-- 移除了文字描述 -->
             </div>
             
             <div class="timer-controls">
@@ -481,6 +480,8 @@
             </div>
             <div class="gaokao-date">2026年6月7日</div>
             <div class="gaokao-countdown" id="gaokaoCountdown">000天</div>
+            
+            <div class="section-title">进度完成情况</div>
             <div class="progress-container">
                 <div class="progress-bar" id="gaokaoProgress"></div>
             </div>
@@ -520,15 +521,15 @@
                 <i class="fas fa-quote-left"></i>
                 <span>每日一言</span>
             </div>
-            <div class="quote-content" id="hitokoto_text">
-                正在加载...
+            <div class="quote-content" id="dailyQuote">
+                加载中...
             </div>
-            <div class="quote-author" id="hitokoto_author">— 哈工皮特</div>
+            <div class="quote-author" id="quoteAuthor"></div>
         </div>
     </div>
 
     <footer>
-        Powered by AtlanticAI
+        v0.5 | Powered by AtlanticAI
     </footer>
 
     <audio id="alarmSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" preload="auto"></audio>
@@ -554,8 +555,6 @@
         const daysPassed = document.getElementById('daysPassed');
         const daysLeft = document.getElementById('daysLeft');
         const timerProgress = document.getElementById('timerProgress');
-        const timerElapsed = document.getElementById('timerElapsed');
-        const timerRemaining = document.getElementById('timerRemaining');
         const dailyQuote = document.getElementById('dailyQuote');
         const quoteAuthor = document.getElementById('quoteAuthor');
 
@@ -568,45 +567,13 @@
         let userLocation = null;
         let isDarkMode = false;
 
-        // 每日一言数据
-        const quotes = [
-            {
-                text: "时间是最宝贵的资源，你不能增加时间，但可以提高它的利用效率。",
-                author: "史蒂夫·乔布斯"
-            },
-            {
-                text: "昨天是历史，明天是谜团，今天是礼物，所以它才被称为present。",
-                author: "功夫熊猫"
-            },
-            {
-                text: "时间不在于你拥有多少，而在于你怎样使用。",
-                author: "艾克"
-            },
-            {
-                text: "合理安排时间，就等于节约时间。",
-                author: "培根"
-            },
-            {
-                text: "时间就像海绵里的水，只要愿挤，总还是有的。",
-                author: "鲁迅"
-            },
-            {
-                text: "失去的东西，其实从来未曾真正地属于你，也不必惋惜。",
-                author: "亦舒"
-            },
-            {
-                text: "时间是一切财富中最宝贵的财富。",
-                author: "德奥弗拉斯多"
-            }
-        ];
-
         // 初始化
         function init() {
             updateTimeAndDate();
             setInterval(updateTimeAndDate, 1000);
             updateGaokaoCountdown();
             setInterval(updateGaokaoCountdown, 60000); // 每分钟更新一次
-            updateDailyQuote();
+            fetchHitokoto();
             
             // 设置事件监听器
             startTimerButton.addEventListener('click', startTimer);
@@ -634,6 +601,21 @@
             
             // 检查是否已经是暗黑模式
             checkDarkModePreference();
+        }
+
+        // 从hitokoto.cn获取每日一言
+        function fetchHitokoto() {
+            fetch('https://v1.hitokoto.cn')
+                .then(response => response.json())
+                .then(data => {
+                    dailyQuote.textContent = data.hitokoto;
+                    quoteAuthor.textContent = `— ${data.from}${data.from_who ? ` · ${data.from_who}` : ''}`;
+                })
+                .catch(error => {
+                    console.error('获取每日一言失败:', error);
+                    dailyQuote.textContent = "时间是最宝贵的资源，你不能增加时间，但可以提高它的利用效率。";
+                    quoteAuthor.textContent = "— 史蒂夫·乔布斯";
+                });
         }
 
         // 更新时间和日期
@@ -675,18 +657,6 @@
             const progress = Math.min(100, (daysCompleted / totalDays) * 100);
             gaokaoProgress.style.width = `${progress}%`;
         }
-
-        // 更新每日一言
-        fetch('https://v1.hitokoto.cn')
-            .then(response => response.json())
-            .then(data => {
-                const hitokoto = document.querySelector('#hitokoto_text')
-                const author = document.querySelector('#hitokoto_author')
-                hitokoto.href = `https://hitokoto.cn/?uuid=${data.uuid}`
-                hitokoto.innerText = data.hitokoto
-                author.innerText = data.from_who
-            })
-            .catch(console.error)
 
         // 验证时间输入
         function validateTimeInput(e) {
@@ -770,14 +740,6 @@
         function updateTimerProgress() {
             const progress = 100 - (remainingSeconds / totalSeconds * 100);
             timerProgress.style.width = `${progress}%`;
-            timerElapsed.textContent = `${Math.round(progress)}%`;
-            
-            // 更新剩余时间
-            const hours = Math.floor(remainingSeconds / 3600);
-            const minutes = Math.floor((remainingSeconds % 3600) / 60);
-            const seconds = remainingSeconds % 60;
-            
-            timerRemaining.textContent = `剩余: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
         // 暂停计时器
@@ -805,8 +767,6 @@
             timerDisplay.textContent = "00:00:00";
             timerDisplay.classList.remove('timer-ended');
             timerProgress.style.width = "0%";
-            timerElapsed.textContent = "0%";
-            timerRemaining.textContent = "剩余: 00:00:00";
             
             startTimerButton.disabled = false;
             pauseTimerButton.disabled = true;
