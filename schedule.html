@@ -404,13 +404,11 @@
             <li class="nav-item">
                 <a href="index.html" class="nav-link">
                     <i class="fas fa-clock"></i>
-                    <span>时间</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="schedule.html" class="nav-link active">
                     <i class="fas fa-calendar-alt"></i>
-                    <span>课程表</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -437,7 +435,7 @@
             <div class="card schedule-card">
                 <div class="card-header">
                     <div class="card-title">今日课程</div>
-                    <div class="current-time" id="current-time">14:25:36</div>
+                    <div class="current-time" id="current-time">11:02</div>
                 </div>
                 
                 <div class="class-info">
@@ -510,8 +508,7 @@
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+            document.getElementById('current-time').textContent = `${hours}:${minutes}`;
             
             return now;
         }
