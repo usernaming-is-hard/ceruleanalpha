@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程表 - It's Down's Time!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }
+        
+        .card {
+            width: 360px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+        
+        .current-time {
+            font-size: 16px;
+            color: #86868b;
+            font-weight: 500;
+        }
+        
+        .class-info {
+            margin-bottom: 24px;
+        }
+        
+        .class-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            transition: color 0.3s ease;
+        }
+        
+        .class-time {
+            font-size: 18px;
+            color: #86868b;
+            margin-bottom: 8px;
+        }
+        
+        .class-location {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            color: #515154;
+        }
+        
+        .location-icon {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .status-preparing {
+            background-color: rgba(255, 204, 0, 0.2);
+            color: #b38c00;
+        }
+        
+        .status-ongoing {
+            background-color: rgba(0, 126, 255, 0.2);
+            color: #0066cc;
+        }
+        
+        .status-finished {
+            background-color: rgba(40, 205, 65, 0.2);
+            color: #1a8e3a;
+        }
+        
+        .countdown {
+            font-size: 15px;
+            color: #86868b;
+            margin-top: 4px;
+        }
+        
+        .schedule-list {
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding-top: 16px;
+        }
+        
+        .schedule-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+        }
+        
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .schedule-item:last-child {
+            border-bottom: none;
+        }
+        
+        .schedule-item-time {
+            color: #86868b;
+            font-size: 15px;
+        }
+        
+        .schedule-item-name {
+            color: #1d1d1f;
+            font-weight: 500;
+            flex-grow: 1;
+            margin-left: 16px;
+        }
+        
+        .schedule-item-location {
+            color: #86868b;
+            font-size: 15px;
+        }
+        
+        .highlight {
+            color: #007aff;
+            font-weight: 600;
+        }
+        
+        /* 动画效果 */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="card schedule-card">
+        <div class="card-header">
+            <div class="card-title">课程表</div>
+            <div class="current-time" id="current-time">14:25</div>
+        </div>
+        
+        <div class="class-info">
+            <div class="class-name" id="current-class-name">高等数学</div>
+            <div class="class-time" id="current-class-time">14:30 - 16:00</div>
+            <div class="class-location">
+                <svg class="location-icon" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0a5 5 0 0 0-5 5c0 5 5 10 5 10s5-5 5-10a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/>
+                </svg>
+                <span id="current-class-location">第一教学楼 302室</span>
+            </div>
+            <div class="status-indicator" id="status-indicator">预备中</div>
+            <div class="countdown" id="countdown">距离上课还有 5分钟</div>
+        </div>
+        
+        <div class="schedule-list">
+            <div class="schedule-title">今日课程</div>
+            <div class="schedule-items" id="schedule-items">
+                <!-- 课程项将由JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟课程数据
+        const todaySchedule = [
+            { name: "高等数学", startTime: "08:00", endTime: "09:30", location: "第一教学楼 302室" },
+            { name: "大学英语", startTime: "10:00", endTime: "11:30", location: "外语楼 105室" },
+            { name: "程序设计", startTime: "14:30", endTime: "16:00", location: "计算机中心 203室" },
+            { name: "线性代数", startTime: "16:30", endTime: "18:00", location: "第二教学楼 401室" }
+        ];
+
+        // 更新当前时间显示
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('current-time').textContent = `${hours}:${minutes}`;
+            
+            return now;
+        }
+
+        // 将时间字符串转换为分钟数
+        function timeToMinutes(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        // 查找当前或下一节课
+        function findCurrentOrNextClass(now) {
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            
+            for (let i = 0; i < todaySchedule.length; i++) {
+                const classItem = todaySchedule[i];
+                const startMinutes = timeToMinutes(classItem.startTime);
+                const endMinutes = timeToMinutes(classItem.endTime);
+                
+                // 如果当前时间在课程开始前15分钟内
+                if (currentMinutes >= startMinutes - 15 && currentMinutes < startMinutes) {
+                    return {
+                        class: classItem,
+                        status: 'preparing',
+                        minutesRemaining: startMinutes - currentMinutes
+                    };
+                }
+                
+                // 如果当前时间在课程进行中
+                if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
+                    return {
+                        class: classItem,
+                        status: 'ongoing',
+                        minutesRemaining: endMinutes - currentMinutes
+                    };
+                }
+                
+                // 如果当前时间在课程结束后15分钟内
+                if (currentMinutes >= endMinutes && currentMinutes < endMinutes + 15) {
+                    return {
+                        class: classItem,
+                        status: 'finished',
+                        minutesRemaining: currentMinutes - endMinutes
+                    };
+                }
+            }
+            
+            // 如果没有正在进行的课程，找到下一节课
+            for (let i = 0; i < todaySchedule.length; i++) {
+                const classItem = todaySchedule[i];
+                const startMinutes = timeToMinutes(classItem.startTime);
+                
+                if (currentMinutes < startMinutes) {
+                    return {
+                        class: classItem,
+                        status: 'waiting',
+                        minutesRemaining: startMinutes - currentMinutes
+                    };
+                }
+            }
+            
+            // 如果没有更多课程
+            return null;
+        }
+
+        // 更新课程卡片状态
+        function updateCardStatus() {
+            const now = updateCurrentTime();
+            const currentClassInfo = findCurrentOrNextClass(now);
+            const statusIndicator = document.getElementById('status-indicator');
+            const countdownEl = document.getElementById('countdown');
+            const classNameEl = document.getElementById('current-class-name');
+            const classTimeEl = document.getElementById('current-class-time');
+            const classLocationEl = document.getElementById('current-class-location');
+            
+            if (!currentClassInfo) {
+                classNameEl.textContent = "今日课程已结束";
+                classTimeEl.textContent = "";
+                classLocationEl.textContent = "";
+                statusIndicator.textContent = "已完成";
+                statusIndicator.className = "status-indicator status-finished";
+                countdownEl.textContent = "放松一下，准备明天的课程吧";
+                return;
+            }
+            
+            const { class: classItem, status, minutesRemaining } = currentClassInfo;
+            
+            classNameEl.textContent = classItem.name;
+            classTimeEl.textContent = `${classItem.startTime} - ${classItem.endTime}`;
+            classLocationEl.textContent = classItem.location;
+            
+            switch(status) {
+                case 'preparing':
+                    statusIndicator.textContent = "预备中";
+                    statusIndicator.className = "status-indicator status-preparing";
+                    countdownEl.textContent = `距离上课还有 ${minutesRemaining}分钟`;
+                    break;
+                case 'ongoing':
+                    statusIndicator.textContent = "上课中";
+                    statusIndicator.className = "status-indicator status-ongoing pulse";
+                    countdownEl.textContent = `距离下课还有 ${minutesRemaining}分钟`;
+                    break;
+                case 'finished':
+                    statusIndicator.textContent = "已下课";
+                    statusIndicator.className = "status-indicator status-finished";
+                    countdownEl.textContent = `课程结束 ${minutesRemaining}分钟`;
+                    break;
+                case 'waiting':
+                    statusIndicator.textContent = "等待中";
+                    statusIndicator.className = "status-indicator";
+                    countdownEl.textContent = `距离上课还有 ${minutesRemaining}分钟`;
+                    break;
+            }
+        }
+
+        // 渲染课程列表
+        function renderScheduleList() {
+            const scheduleItemsContainer = document.getElementById('schedule-items');
+            scheduleItemsContainer.innerHTML = '';
+            
+            todaySchedule.forEach(classItem => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'schedule-item';
+                
+                itemEl.innerHTML = `
+                    <div class="schedule-item-time">${classItem.startTime}</div>
+                    <div class="schedule-item-name">${classItem.name}</div>
+                    <div class="schedule-item-location">${classItem.location}</div>
+                `;
+                
+                scheduleItemsContainer.appendChild(itemEl);
+            });
+        }
+
+        // 初始化
+        function init() {
+            renderScheduleList();
+            updateCardStatus();
+            
+            // 每分钟更新一次
+            setInterval(updateCardStatus, 60000);
+        }
+
+        // 启动应用
+        init();
+    </script>
+</body>
+</html>
