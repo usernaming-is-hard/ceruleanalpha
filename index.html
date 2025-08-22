@@ -235,6 +235,21 @@
             cursor: not-allowed;
         }
 
+        .preset-button {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--text-color);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .preset-button {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .preset-button:hover {
+            background-color: var(--accent-bg);
+        }
+
         input, select {
             background-color: rgba(0, 0, 0, 0.05);
             border: none;
@@ -440,6 +455,19 @@
             display: none;
         }
 
+        .timer-presets {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .preset-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
         @media (max-width: 1200px) {
             .container {
                 grid-template-columns: repeat(6, 1fr);
@@ -552,6 +580,14 @@
                     <input type="number" id="seconds" min="0" max="59" value="0">
                 </div>
             </div>
+            
+            <div class="timer-presets">
+                <button class="preset-button preset-btn" data-minutes="60">1小时</button>
+                <button class="preset-button preset-btn" data-minutes="75">1小时15分</button>
+                <button class="preset-button preset-btn" data-minutes="90">1小时30分</button>
+                <button class="preset-button preset-btn" data-minutes="120">2小时</button>
+            </div>
+            
             <div class="timer-display" id="timerDisplay">00:00:00</div>
             
             <div class="timer-progress-container">
@@ -624,7 +660,7 @@
     </div>
 
     <footer>
-        v0.8 | Powered by AtlanticAI
+        Powered by AtlanticAI
     </footer>
 
     <audio id="alarmSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" preload="auto"></audio>
@@ -652,6 +688,7 @@
         const timerProgress = document.getElementById('timerProgress');
         const dailyQuote = document.getElementById('dailyQuote');
         const quoteAuthor = document.getElementById('quoteAuthor');
+        const presetButtons = document.querySelectorAll('.preset-button');
 
         // 全局变量
         let timerInterval = null;
@@ -664,6 +701,9 @@
 
         // 初始化
         function init() {
+            // 从本地存储加载设置
+            loadSettings();
+            
             updateTimeAndDate();
             setInterval(updateTimeAndDate, 1000);
             updateGaokaoCountdown();
@@ -686,16 +726,126 @@
                     // 更新活动状态
                     colorOptions.forEach(opt => opt.classList.remove('active'));
                     option.classList.add('active');
+                    
+                    // 保存设置
+                    saveSettings();
                 });
             });
             
             // 输入验证
             [hoursInput, minutesInput, secondsInput].forEach(input => {
                 input.addEventListener('change', validateTimeInput);
+                input.addEventListener('input', () => {
+                    // 当用户修改时间时保存设置
+                    saveSettings();
+                });
+            });
+            
+            // 预设按钮事件
+            presetButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const minutes = parseInt(button.getAttribute('data-minutes'));
+                    setPresetTime(minutes);
+                });
             });
             
             // 检查是否已经是暗黑模式
             checkDarkModePreference();
+        }
+
+        // 保存设置到本地存储
+        function saveSettings() {
+            const settings = {
+                theme: isDarkMode ? 'dark' : 'light',
+                primaryColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim(),
+                timer: {
+                    hours: hoursInput.value,
+                    minutes: minutesInput.value,
+                    seconds: secondsInput.value,
+                    running: timerRunning,
+                    paused: timerPaused,
+                    totalSeconds: totalSeconds,
+                    remainingSeconds: remainingSeconds
+                },
+                location: userLocation
+            };
+            
+            localStorage.setItem('timeAppSettings', JSON.stringify(settings));
+        }
+
+        // 从本地存储加载设置
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('timeAppSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                
+                // 加载主题设置
+                if (settings.theme === 'dark') {
+                    isDarkMode = true;
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    themeToggle.querySelector('.sun-moon').innerHTML = '<i class="fas fa-sun"></i>';
+                }
+                
+                // 加载主题颜色
+                if (settings.primaryColor) {
+                    document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
+                    
+                    // 更新活动颜色选项
+                    colorOptions.forEach(option => {
+                        if (option.getAttribute('data-color') === settings.primaryColor) {
+                            option.classList.add('active');
+                        } else {
+                            option.classList.remove('active');
+                        }
+                    });
+                }
+                
+                // 加载计时器设置
+                if (settings.timer) {
+                    hoursInput.value = settings.timer.hours || 0;
+                    minutesInput.value = settings.timer.minutes || 0;
+                    secondsInput.value = settings.timer.seconds || 0;
+                    
+                    if (settings.timer.running) {
+                        totalSeconds = settings.timer.totalSeconds || 0;
+                        remainingSeconds = settings.timer.remainingSeconds || 0;
+                        
+                        if (settings.timer.paused) {
+                            timerPaused = true;
+                            pauseTimerButton.textContent = "继续";
+                            updateTimerDisplay();
+                            updateTimerProgress();
+                        } else {
+                            startTimer();
+                        }
+                    } else {
+                        updateTimerDisplay();
+                    }
+                }
+                
+                // 加载位置设置
+                if (settings.location) {
+                    userLocation = settings.location;
+                    locationStatus.textContent = `位置已获取: ${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`;
+                    getLocationButton.textContent = "更新位置";
+                }
+            }
+        }
+
+        // 设置预设时间
+        function setPresetTime(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            
+            hoursInput.value = hours;
+            minutesInput.value = mins;
+            secondsInput.value = 0;
+            
+            // 更新显示
+            updateTimerDisplay();
+            
+            // 保存设置
+            saveSettings();
         }
 
         // 从hitokoto.cn获取每日一言
@@ -730,6 +880,15 @@
             if (userLocation) {
                 checkSunriseSunset();
             }
+        }
+
+        // 更新计时器显示
+        function updateTimerDisplay() {
+            const hours = Math.floor(remainingSeconds / 3600);
+            const minutes = Math.floor((remainingSeconds % 3600) / 60);
+            const seconds = remainingSeconds % 60;
+            
+            timerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
         // 更新高考倒计时
@@ -795,6 +954,9 @@
             
             timerInterval = setInterval(updateTimer, 1000);
             timerDisplay.classList.remove('timer-ended');
+            
+            // 保存设置
+            saveSettings();
         }
 
         // 更新计时器
@@ -817,18 +979,22 @@
                 minutesInput.disabled = false;
                 secondsInput.disabled = false;
                 
+                // 保存设置
+                saveSettings();
+                
                 return;
             }
             
             // 更新显示
-            const hours = Math.floor(remainingSeconds / 3600);
-            const minutes = Math.floor((remainingSeconds % 3600) / 60);
-            const seconds = remainingSeconds % 60;
-            
-            timerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            updateTimerDisplay();
             
             // 更新进度
             updateTimerProgress();
+            
+            // 每秒保存一次设置（为了剩余时间）
+            if (remainingSeconds % 5 === 0) { // 每5秒保存一次，减少频繁操作
+                saveSettings();
+            }
         }
 
         // 更新计时器进度
@@ -850,6 +1016,9 @@
             }
             
             timerPaused = !timerPaused;
+            
+            // 保存设置
+            saveSettings();
         }
 
         // 重置计时器
@@ -875,6 +1044,12 @@
             hoursInput.value = "0";
             minutesInput.value = "0";
             secondsInput.value = "0";
+            
+            totalSeconds = 0;
+            remainingSeconds = 0;
+            
+            // 保存设置
+            saveSettings();
         }
 
         // 切换主题
@@ -888,6 +1063,9 @@
                 document.documentElement.removeAttribute('data-theme');
                 themeToggle.querySelector('.sun-moon').innerHTML = '<i class="fas fa-moon"></i>';
             }
+            
+            // 保存设置
+            saveSettings();
         }
 
         // 检查暗黑模式偏好
@@ -896,6 +1074,9 @@
                 isDarkMode = true;
                 document.documentElement.setAttribute('data-theme', 'dark');
                 themeToggle.querySelector('.sun-moon').innerHTML = '<i class="fas fa-sun"></i>';
+                
+                // 保存设置
+                saveSettings();
             }
         }
 
@@ -920,6 +1101,9 @@
                     getLocationButton.textContent = "更新位置";
                     getLocationButton.disabled = false;
                     
+                    // 保存设置
+                    saveSettings();
+                    
                     // 检查一次日出日落时间
                     checkSunriseSunset();
                 },
@@ -940,6 +1124,9 @@
                     }
                     
                     getLocationButton.disabled = false;
+                    
+                    // 保存设置
+                    saveSettings();
                 }
             );
         }
