@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>It's Down's Time!</title>
+    <style>
+        :root {
+            --primary-color: #007AFF;
+            --background-color: #FFFFFF;
+            --card-bg-color: #F2F2F7;
+            --text-color: #000000;
+            --secondary-text: #8E8E93;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --card-radius: 20px;
+            --transition-speed: 0.3s;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #0A84FF;
+            --background-color: #000000;
+            --card-bg-color: #1C1C1E;
+            --text-color: #FFFFFF;
+            --secondary-text: #8E8E93;
+            --shadow-color: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg-color);
+            border-radius: var(--card-radius);
+            padding: 30px;
+            box-shadow: 0 8px 16px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            font-size: 28px;
+        }
+
+        .time-display {
+            font-size: 64px;
+            font-weight: 200;
+            text-align: center;
+            letter-spacing: -1px;
+            margin: 10px 0;
+        }
+
+        .date-display {
+            font-size: 24px;
+            font-weight: 400;
+            text-align: center;
+            color: var(--secondary-text);
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        input, select {
+            background-color: rgba(0, 0, 0, 0.05);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 16px;
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] input, [data-theme="dark"] select {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .timer-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .timer-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .timer-input label {
+            font-size: 14px;
+            color: var(--secondary-text);
+        }
+
+        .color-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 3px solid transparent;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.active {
+            border-color: var(--text-color);
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: var(--secondary-text);
+            font-size: 14px;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--card-bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            z-index: 100;
+        }
+
+        .sun-moon {
+            font-size: 24px;
+        }
+
+        .timer-display {
+            font-size: 56px;
+            font-weight: 300;
+            text-align: center;
+            margin: 15px 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-ended {
+            animation: pulse 1.5s infinite;
+            color: var(--primary-color);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-toggle" id="themeToggle">
+        <div class="sun-moon">🌙</div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-title">
+                <i>⏰</i>
+                <span>当前时间</span>
+            </div>
+            <div class="time-display" id="currentTime">00:00:00</div>
+            <div class="date-display" id="currentDate">2023年11月11日 星期六</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <i>⏱️</i>
+                <span>计时器</span>
+            </div>
+            <div class="timer-inputs">
+                <div class="timer-input">
+                    <label for="hours">小时</label>
+                    <input type="number" id="hours" min="0" max="23" value="0">
+                </div>
+                <div class="timer-input">
+                    <label for="minutes">分钟</label>
+                    <input type="number" id="minutes" min="0" max="59" value="0">
+                </div>
+                <div class="timer-input">
+                    <label for="seconds">秒</label>
+                    <input type="number" id="seconds" min="0" max="59" value="0">
+                </div>
+            </div>
+            <div class="timer-display" id="timerDisplay">00:00:00</div>
+            <div class="timer-controls">
+                <button id="startTimer">开始</button>
+                <button id="pauseTimer" disabled>暂停</button>
+                <button id="resetTimer" disabled>重置</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <i>🎨</i>
+                <span>主题颜色</span>
+            </div>
+            <div class="color-picker">
+                <div class="color-option active" style="background-color: #007AFF;" data-color="#007AFF"></div>
+                <div class="color-option" style="background-color: #FF2D55;" data-color="#FF2D55"></div>
+                <div class="color-option" style="background-color: #34C759;" data-color="#34C759"></div>
+                <div class="color-option" style="background-color: #FF9500;" data-color="#FF9500"></div>
+                <div class="color-option" style="background-color: #AF52DE;" data-color="#AF52DE"></div>
+                <div class="color-option" style="background-color: #5856D6;" data-color="#5856D6"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <i>🌓</i>
+                <span>日出日落模式</span>
+            </div>
+            <p>根据您的位置自动在日出和日落时切换明暗模式</p>
+            <button id="getLocation">启用位置检测</button>
+            <p id="locationStatus" style="text-align: center; margin-top: 10px; color: var(--secondary-text); font-size: 14px;">位置服务未启用</p>
+        </div>
+    </div>
+
+    <footer>
+        Powered by AtlanticAI
+    </footer>
+
+    <audio id="alarmSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" preload="auto"></audio>
+
+    <script>
+        // DOM元素
+        const currentTimeElement = document.getElementById('currentTime');
+        const currentDateElement = document.getElementById('currentDate');
+        const themeToggle = document.getElementById('themeToggle');
+        const colorOptions = document.querySelectorAll('.color-option');
+        const hoursInput = document.getElementById('hours');
+        const minutesInput = document.getElementById('minutes');
+        const secondsInput = document.getElementById('seconds');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const startTimerButton = document.getElementById('startTimer');
+        const pauseTimerButton = document.getElementById('pauseTimer');
+        const resetTimerButton = document.getElementById('resetTimer');
+        const getLocationButton = document.getElementById('getLocation');
+        const locationStatus = document.getElementById('locationStatus');
+        const alarmSound = document.getElementById('alarmSound');
+
+        // 全局变量
+        let timerInterval = null;
+        let timerRunning = false;
+        let timerPaused = false;
+        let totalSeconds = 0;
+        let remainingSeconds = 0;
+        let userLocation = null;
+        let isDarkMode = false;
+
+        // 初始化
+        function init() {
+            updateTimeAndDate();
+            setInterval(updateTimeAndDate, 1000);
+            
+            // 设置事件监听器
+            startTimerButton.addEventListener('click', startTimer);
+            pauseTimerButton.addEventListener('click', pauseTimer);
+            resetTimerButton.addEventListener('click', resetTimer);
+            themeToggle.addEventListener('click', toggleTheme);
+            getLocationButton.addEventListener('click', requestLocation);
+            
+            // 颜色选择器事件
+            colorOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const color = option.getAttribute('data-color');
+                    document.documentElement.style.setProperty('--primary-color', color);
+                    
+                    // 更新活动状态
+                    colorOptions.forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                });
+            });
+            
+            // 输入验证
+            [hoursInput, minutesInput, secondsInput].forEach(input => {
+                input.addEventListener('change', validateTimeInput);
+            });
+            
+            // 检查是否已经是暗黑模式
+            checkDarkModePreference();
+        }
+
+        // 更新时间和日期
+        function updateTimeAndDate() {
+            const now = new Date();
+            
+            // 更新时间
+            const timeString = now.toLocaleTimeString('zh-CN');
+            currentTimeElement.textContent = timeString;
+            
+            // 更新日期
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            const dateString = now.toLocaleDateString('zh-CN', options);
+            currentDateElement.textContent = dateString;
+            
+            // 检查是否应该根据日出日落切换主题
+            if (userLocation) {
+                checkSunriseSunset();
+            }
+        }
+
+        // 验证时间输入
+        function validateTimeInput(e) {
+            const input = e.target;
+            const value = parseInt(input.value);
+            
+            if (isNaN(value) || value < 0) {
+                input.value = 0;
+            } else if (input.id === 'hours' && value > 23) {
+                input.value = 23;
+            } else if ((input.id === 'minutes' || input.id === 'seconds') && value > 59) {
+                input.value = 59;
+            }
+        }
+
+        // 开始计时器
+        function startTimer() {
+            if (timerRunning && !timerPaused) return;
+            
+            if (!timerRunning) {
+                const hours = parseInt(hoursInput.value) || 0;
+                const minutes = parseInt(minutesInput.value) || 0;
+                const seconds = parseInt(secondsInput.value) || 0;
+                
+                totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                if (totalSeconds <= 0) return;
+                
+                remainingSeconds = totalSeconds;
+            }
+            
+            timerRunning = true;
+            timerPaused = false;
+            
+            startTimerButton.disabled = true;
+            pauseTimerButton.disabled = false;
+            resetTimerButton.disabled = false;
+            hoursInput.disabled = true;
+            minutesInput.disabled = true;
+            secondsInput.disabled = true;
+            
+            timerInterval = setInterval(updateTimer, 1000);
+            timerDisplay.classList.remove('timer-ended');
+        }
+
+        // 更新计时器
+        function updateTimer() {
+            remainingSeconds--;
+            
+            if (remainingSeconds <= 0) {
+                clearInterval(timerInterval);
+                timerDisplay.textContent = "00:00:00";
+                timerDisplay.classList.add('timer-ended');
+                
+                // 播放声音
+                alarmSound.play();
+                
+                // 重置状态
+                timerRunning = false;
+                startTimerButton.disabled = false;
+                pauseTimerButton.disabled = true;
+                hoursInput.disabled = false;
+                minutesInput.disabled = false;
+                secondsInput.disabled = false;
+                
+                return;
+            }
+            
+            // 更新显示
+            const hours = Math.floor(remainingSeconds / 3600);
+            const minutes = Math.floor((remainingSeconds % 3600) / 60);
+            const seconds = remainingSeconds % 60;
+            
+            timerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // 暂停计时器
+        function pauseTimer() {
+            if (!timerRunning) return;
+            
+            if (timerPaused) {
+                timerInterval = setInterval(updateTimer, 1000);
+                pauseTimerButton.textContent = "暂停";
+            } else {
+                clearInterval(timerInterval);
+                pauseTimerButton.textContent = "继续";
+            }
+            
+            timerPaused = !timerPaused;
+        }
+
+        // 重置计时器
+        function resetTimer() {
+            clearInterval(timerInterval);
+            
+            timerRunning = false;
+            timerPaused = false;
+            
+            timerDisplay.textContent = "00:00:00";
+            timerDisplay.classList.remove('timer-ended');
+            
+            startTimerButton.disabled = false;
+            pauseTimerButton.disabled = true;
+            resetTimerButton.disabled = true;
+            pauseTimerButton.textContent = "暂停";
+            
+            hoursInput.disabled = false;
+            minutesInput.disabled = false;
+            secondsInput.disabled = false;
+            
+            hoursInput.value = "0";
+            minutesInput.value = "0";
+            secondsInput.value = "0";
+        }
+
+        // 切换主题
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            
+            if (isDarkMode) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.querySelector('.sun-moon').textContent = '☀️';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                themeToggle.querySelector('.sun-moon').textContent = '🌙';
+            }
+        }
+
+        // 检查暗黑模式偏好
+        function checkDarkModePreference() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                isDarkMode = true;
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.querySelector('.sun-moon').textContent = '☀️';
+            }
+        }
+
+        // 请求位置
+        function requestLocation() {
+            if (!navigator.geolocation) {
+                locationStatus.textContent = "您的浏览器不支持地理位置功能";
+                return;
+            }
+            
+            locationStatus.textContent = "获取位置中...";
+            getLocationButton.disabled = true;
+            
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    userLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                    
+                    locationStatus.textContent = `位置已获取: ${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`;
+                    getLocationButton.textContent = "更新位置";
+                    getLocationButton.disabled = false;
+                    
+                    // 检查一次日出日落时间
+                    checkSunriseSunset();
+                },
+                error => {
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            locationStatus.textContent = "用户拒绝了位置请求";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            locationStatus.textContent = "无法获取位置信息";
+                            break;
+                        case error.TIMEOUT:
+                            locationStatus.textContent = "位置请求超时";
+                            break;
+                        default:
+                            locationStatus.textContent = "发生未知错误";
+                            break;
+                    }
+                    
+                    getLocationButton.disabled = false;
+                }
+            );
+        }
+
+        // 检查日出日落时间
+        function checkSunriseSunset() {
+            if (!userLocation) return;
+            
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            // 简化版的日出日落计算（实际应用中应使用更精确的算法）
+            // 这里使用简化假设：日出在6:00，日落在18:00
+            const sunrise = new Date(today);
+            sunrise.setHours(6, 0, 0, 0);
+            
+            const sunset = new Date(today);
+            sunset.setHours(18, 0, 0, 0);
+            
+            // 检查当前时间是否在日落之后或日出之前
+            if (now >= sunset || now < sunrise) {
+                if (!isDarkMode) {
+                    toggleTheme();
+                }
+            } else {
+                if (isDarkMode) {
+                    toggleTheme();
+                }
+            }
+        }
+
+        // 初始化应用
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
