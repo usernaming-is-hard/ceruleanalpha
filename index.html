@@ -462,13 +462,8 @@
             <div class="timer-display" id="timerDisplay">00:00:00</div>
             
             <div class="timer-progress-container">
-                <div class="section-title">进度</div>
                 <div class="progress-container">
                     <div class="progress-bar" id="timerProgress"></div>
-                </div>
-                <div class="timer-progress-info">
-                    <span id="timerElapsed">0%</span>
-                    <span id="timerRemaining">剩余: 00:00:00</span>
                 </div>
             </div>
             
@@ -486,8 +481,6 @@
             </div>
             <div class="gaokao-date">2026年6月7日</div>
             <div class="gaokao-countdown" id="gaokaoCountdown">000天</div>
-            
-            <div class="section-title">进度完成情况</div>
             <div class="progress-container">
                 <div class="progress-bar" id="gaokaoProgress"></div>
             </div>
@@ -527,10 +520,10 @@
                 <i class="fas fa-quote-left"></i>
                 <span>每日一言</span>
             </div>
-            <div class="quote-content" id="dailyQuote">
-                时间是最宝贵的资源，你不能增加时间，但可以提高它的利用效率。
+            <div class="quote-content" id="hitokoto_text">
+                正在加载...
             </div>
-            <div class="quote-author" id="quoteAuthor">— 史蒂夫·乔布斯</div>
+            <div class="quote-author" id="hitokoto_author">— 哈工皮特</div>
         </div>
     </div>
 
@@ -684,14 +677,16 @@
         }
 
         // 更新每日一言
-        function updateDailyQuote() {
-            const today = new Date();
-            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-            const quoteIndex = dayOfYear % quotes.length;
-            
-            dailyQuote.textContent = quotes[quoteIndex].text;
-            quoteAuthor.textContent = `— ${quotes[quoteIndex].author}`;
-        }
+        fetch('https://v1.hitokoto.cn')
+            .then(response => response.json())
+            .then(data => {
+                const hitokoto = document.querySelector('#hitokoto_text')
+                const author = document.querySelector('#hitokoto_author')
+                hitokoto.href = `https://hitokoto.cn/?uuid=${data.uuid}`
+                hitokoto.innerText = data.hitokoto
+                author.innerText = data.from_who
+            })
+            .catch(console.error)
 
         // 验证时间输入
         function validateTimeInput(e) {
