@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>课程表 - It's Down's Time!</title>
+    <title>周课程表卡片 - Apple风格</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -21,15 +22,72 @@
             padding: 20px;
         }
         
-        .card {
-            width: 360px;
+        .container {
+            width: 100%;
+            max-width: 800px;
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1d1d1f;
+        }
+        
+        .date-selector {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .day-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .day-btn.active {
+            background: #007aff;
+            color: white;
+            border-color: #007aff;
+        }
+        
+        .day-btn:hover:not(.active) {
+            background: rgba(0, 122, 255, 0.1);
+        }
+        
+        .current-time {
+            font-size: 16px;
+            color: #86868b;
+            font-weight: 500;
+            text-align: right;
+            margin-top: 8px;
+        }
+        
+        .card {
+            background: white;
             border-radius: 20px;
             padding: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+            margin-bottom: 24px;
         }
         
         .card-header {
@@ -40,19 +98,19 @@
         }
         
         .card-title {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 600;
             color: #1d1d1f;
         }
         
-        .current-time {
+        .day-display {
             font-size: 16px;
             color: #86868b;
             font-weight: 500;
         }
         
         .class-info {
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
         
         .class-name {
@@ -128,7 +186,7 @@
         .schedule-item {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: 12px 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
@@ -139,23 +197,37 @@
         .schedule-item-time {
             color: #86868b;
             font-size: 15px;
+            width: 100px;
         }
         
         .schedule-item-name {
             color: #1d1d1f;
             font-weight: 500;
             flex-grow: 1;
-            margin-left: 16px;
         }
         
         .schedule-item-location {
             color: #86868b;
             font-size: 15px;
+            width: 150px;
+            text-align: right;
         }
         
         .highlight {
             color: #007aff;
             font-weight: 600;
+        }
+        
+        .no-class {
+            text-align: center;
+            padding: 40px 0;
+            color: #86868b;
+        }
+        
+        .no-class i {
+            font-size: 40px;
+            margin-bottom: 16px;
+            display: block;
         }
         
         /* 动画效果 */
@@ -168,51 +240,133 @@
         .pulse {
             animation: pulse 1.5s infinite;
         }
+        
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            
+            .date-selector {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 8px;
+            }
+            
+            .schedule-item {
+                flex-direction: column;
+                gap: 4px;
+            }
+            
+            .schedule-item-time, .schedule-item-location {
+                width: 100%;
+                text-align: left;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="card schedule-card">
-        <div class="card-header">
-            <div class="card-title">课程表</div>
-            <div class="current-time" id="current-time">14:25</div>
-        </div>
-        
-        <div class="class-info">
-            <div class="class-name" id="current-class-name">高等数学</div>
-            <div class="class-time" id="current-class-time">14:30 - 16:00</div>
-            <div class="class-location">
-                <svg class="location-icon" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M8 0a5 5 0 0 0-5 5c0 5 5 10 5 10s5-5 5-10a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/>
-                </svg>
-                <span id="current-class-location">第一教学楼 302室</span>
+    <div class="container">
+        <div class="header">
+            <div class="title">周课程表</div>
+            <div>
+                <div class="date-selector">
+                    <button class="day-btn" data-day="1">周一</button>
+                    <button class="day-btn" data-day="2">周二</button>
+                    <button class="day-btn" data-day="3">周三</button>
+                    <button class="day-btn" data-day="4">周四</button>
+                    <button class="day-btn" data-day="5">周五</button>
+                    <button class="day-btn" data-day="6">周六</button>
+                    <button class="day-btn" data-day="0">周日</button>
+                </div>
+                <div class="current-time" id="current-time">14:25:36</div>
             </div>
-            <div class="status-indicator" id="status-indicator">预备中</div>
-            <div class="countdown" id="countdown">距离上课还有 5分钟</div>
         </div>
         
-        <div class="schedule-list">
-            <div class="schedule-title">今日课程</div>
-            <div class="schedule-items" id="schedule-items">
-                <!-- 课程项将由JavaScript动态生成 -->
+        <div class="card schedule-card">
+            <div class="card-header">
+                <div class="card-title">今日课程</div>
+                <div class="day-display" id="day-display">星期一</div>
+            </div>
+            
+            <div class="class-info">
+                <div class="class-name" id="current-class-name">高等数学</div>
+                <div class="class-time" id="current-class-time">14:30 - 16:00</div>
+                <div class="class-location">
+                    <svg class="location-icon" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0a5 5 0 0 0-5 5c0 5 5 10 5 10s5-5 5-10a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/>
+                    </svg>
+                    <span id="current-class-location">第一教学楼 302室</span>
+                </div>
+                <div class="status-indicator" id="status-indicator">预备中</div>
+                <div class="countdown" id="countdown">距离上课还有 5分钟</div>
+            </div>
+            
+            <div class="schedule-list">
+                <div class="schedule-title">课程安排</div>
+                <div class="schedule-items" id="schedule-items">
+                    <!-- 课程项将由JavaScript动态生成 -->
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 模拟课程数据
-        const todaySchedule = [
-            { name: "高等数学", startTime: "08:00", endTime: "09:30", location: "第一教学楼 302室" },
-            { name: "大学英语", startTime: "10:00", endTime: "11:30", location: "外语楼 105室" },
-            { name: "程序设计", startTime: "14:30", endTime: "16:00", location: "计算机中心 203室" },
-            { name: "线性代数", startTime: "16:30", endTime: "18:00", location: "第二教学楼 401室" }
-        ];
+        // 周课程表数据（0=周日，1=周一，...，6=周六）
+        const weeklySchedule = {
+            1: [ // 周一
+                { name: "高等数学", startTime: "08:00", endTime: "09:30", location: "第一教学楼 302室" },
+                { name: "大学英语", startTime: "10:00", endTime: "11:30", location: "外语楼 105室" },
+                { name: "程序设计", startTime: "14:30", endTime: "16:00", location: "计算机中心 203室" },
+                { name: "线性代数", startTime: "16:30", endTime: "18:00", location: "第二教学楼 401室" }
+            ],
+            2: [ // 周二
+                { name: "大学物理", startTime: "08:00", endTime: "09:30", location: "物理楼 201室" },
+                { name: "体育", startTime: "10:00", endTime: "11:30", location: "体育馆" },
+                { name: "计算机网络", startTime: "14:30", endTime: "16:00", location: "计算机中心 305室" }
+            ],
+            3: [ // 周三
+                { name: "数据结构", startTime: "08:00", endTime: "09:30", location: "计算机中心 102室" },
+                { name: "离散数学", startTime: "10:00", endTime: "11:30", location: "第二教学楼 203室" },
+                { name: "人工智能", startTime: "14:30", endTime: "16:00", location: "创新楼 501室" }
+            ],
+            4: [ // 周四
+                { name: "操作系统", startTime: "08:00", endTime: "09:30", location: "计算机中心 405室" },
+                { name: "数据库原理", startTime: "10:00", endTime: "11:30", location: "计算机中心 302室" },
+                { name: "软件工程", startTime: "14:30", endTime: "16:00", location: "创新楼 301室" }
+            ],
+            5: [ // 周五
+                { name: "编译原理", startTime: "08:00", endTime: "09:30", location: "计算机中心 201室" },
+                { name: "计算机图形学", startTime: "10:00", endTime: "11:30", location: "计算机中心 403室" },
+                { name: "网络安全", startTime: "14:30", endTime: "16:00", location: "创新楼 402室" }
+            ],
+            6: [ // 周六
+                { name: "创新创业实践", startTime: "09:00", endTime: "11:30", location: "创业中心" }
+            ],
+            0: [ // 周日
+                // 没有课程
+            ]
+        };
+
+        // 星期几的中文名称
+        const dayNames = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+
+        // 当前选中的星期几（0-6，0表示周日）
+        let currentDay = new Date().getDay();
 
         // 更新当前时间显示
         function updateCurrentTime() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('current-time').textContent = `${hours}:${minutes}`;
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
             
             return now;
         }
@@ -224,11 +378,13 @@
         }
 
         // 查找当前或下一节课
-        function findCurrentOrNextClass(now) {
+        function findCurrentOrNextClass(now, daySchedule) {
+            if (!daySchedule || daySchedule.length === 0) return null;
+            
             const currentMinutes = now.getHours() * 60 + now.getMinutes();
             
-            for (let i = 0; i < todaySchedule.length; i++) {
-                const classItem = todaySchedule[i];
+            for (let i = 0; i < daySchedule.length; i++) {
+                const classItem = daySchedule[i];
                 const startMinutes = timeToMinutes(classItem.startTime);
                 const endMinutes = timeToMinutes(classItem.endTime);
                 
@@ -261,8 +417,8 @@
             }
             
             // 如果没有正在进行的课程，找到下一节课
-            for (let i = 0; i < todaySchedule.length; i++) {
-                const classItem = todaySchedule[i];
+            for (let i = 0; i < daySchedule.length; i++) {
+                const classItem = daySchedule[i];
                 const startMinutes = timeToMinutes(classItem.startTime);
                 
                 if (currentMinutes < startMinutes) {
@@ -281,12 +437,26 @@
         // 更新课程卡片状态
         function updateCardStatus() {
             const now = updateCurrentTime();
-            const currentClassInfo = findCurrentOrNextClass(now);
+            const daySchedule = weeklySchedule[currentDay];
+            const currentClassInfo = findCurrentOrNextClass(now, daySchedule);
             const statusIndicator = document.getElementById('status-indicator');
             const countdownEl = document.getElementById('countdown');
             const classNameEl = document.getElementById('current-class-name');
             const classTimeEl = document.getElementById('current-class-time');
             const classLocationEl = document.getElementById('current-class-location');
+            
+            // 更新日期显示
+            document.getElementById('day-display').textContent = dayNames[currentDay];
+            
+            if (!daySchedule || daySchedule.length === 0) {
+                classNameEl.textContent = "今日无课程";
+                classTimeEl.textContent = "";
+                classLocationEl.textContent = "";
+                statusIndicator.textContent = "休息日";
+                statusIndicator.className = "status-indicator";
+                countdownEl.textContent = "放松一下，享受休息时间";
+                return;
+            }
             
             if (!currentClassInfo) {
                 classNameEl.textContent = "今日课程已结束";
@@ -331,14 +501,26 @@
         // 渲染课程列表
         function renderScheduleList() {
             const scheduleItemsContainer = document.getElementById('schedule-items');
+            const daySchedule = weeklySchedule[currentDay];
+            
             scheduleItemsContainer.innerHTML = '';
             
-            todaySchedule.forEach(classItem => {
+            if (!daySchedule || daySchedule.length === 0) {
+                scheduleItemsContainer.innerHTML = `
+                    <div class="no-class">
+                        <i class="fas fa-smile"></i>
+                        <div>今日无课程安排</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            daySchedule.forEach(classItem => {
                 const itemEl = document.createElement('div');
                 itemEl.className = 'schedule-item';
                 
                 itemEl.innerHTML = `
-                    <div class="schedule-item-time">${classItem.startTime}</div>
+                    <div class="schedule-item-time">${classItem.startTime} - ${classItem.endTime}</div>
                     <div class="schedule-item-name">${classItem.name}</div>
                     <div class="schedule-item-location">${classItem.location}</div>
                 `;
@@ -347,13 +529,39 @@
             });
         }
 
+        // 切换日期
+        function setupDaySelector() {
+            const dayButtons = document.querySelectorAll('.day-btn');
+            
+            // 设置当前日期按钮为活跃状态
+            dayButtons.forEach(btn => {
+                if (parseInt(btn.dataset.day) === currentDay) {
+                    btn.classList.add('active');
+                }
+                
+                btn.addEventListener('click', () => {
+                    // 移除所有按钮的活跃状态
+                    dayButtons.forEach(b => b.classList.remove('active'));
+                    // 设置当前按钮为活跃状态
+                    btn.classList.add('active');
+                    // 更新当前选中的日期
+                    currentDay = parseInt(btn.dataset.day);
+                    // 更新课程列表
+                    renderScheduleList();
+                    // 更新卡片状态
+                    updateCardStatus();
+                });
+            });
+        }
+
         // 初始化
         function init() {
+            setupDaySelector();
             renderScheduleList();
             updateCardStatus();
             
-            // 每分钟更新一次
-            setInterval(updateCardStatus, 60000);
+            // 每秒更新一次时间
+            setInterval(updateCardStatus, 1000);
         }
 
         // 启动应用
