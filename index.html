@@ -16,6 +16,7 @@
             --card-radius: 20px;
             --transition-speed: 0.3s;
             --accent-bg: rgba(0, 122, 255, 0.1);
+            --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
 
         [data-theme="dark"] {
@@ -26,6 +27,7 @@
             --secondary-text: #8E8E93;
             --shadow-color: rgba(255, 255, 255, 0.05);
             --accent-bg: rgba(10, 132, 255, 0.15);
+            --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
 
         * {
@@ -33,7 +35,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            transition: background-color var(--transition-speed), color var(--transition-speed);
+            transition: background-color var(--transition-speed), color var(--transition-speed), transform 0.2s ease;
         }
 
         body {
@@ -43,8 +45,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 20px;
+            padding: 40px 20px;
             overflow-x: hidden;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f5f5f7" opacity="0.3"/></svg>');
             background-size: cover;
@@ -56,29 +57,27 @@
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 10;
         }
 
         .header h1 {
-            font-size: 48px;
-            font-weight: 700;
-            margin-bottom: 10px;
+            font-size: 52px;
+            font-weight: 800;
+            margin-bottom: 5px;
             background: linear-gradient(135deg, var(--primary-color), #30D158);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .header p {
-            font-size: 18px;
-            color: var(--secondary-text);
-            font-weight: 300;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .container {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1300px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(12, 1fr);
             gap: 25px;
             margin: 0 auto;
         }
@@ -87,17 +86,27 @@
             background-color: var(--card-bg-color);
             border-radius: var(--card-radius);
             padding: 30px;
-            box-shadow: 0 8px 16px var(--shadow-color);
+            box-shadow: var(--card-shadow);
             display: flex;
             flex-direction: column;
             gap: 20px;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
         }
 
         [data-theme="dark"] .card {
             border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        [data-theme="dark"] .card:hover {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
         }
 
         .card-title {
@@ -145,7 +154,7 @@
             font-size: 16px;
             font-weight: 500;
             cursor: pointer;
-            transition: transform 0.1s, opacity 0.3s;
+            transition: transform 0.1s, opacity 0.3s, background-color 0.3s;
         }
 
         button:hover {
@@ -168,6 +177,7 @@
             padding: 12px 15px;
             font-size: 16px;
             color: var(--text-color);
+            width: 100%;
         }
 
         [data-theme="dark"] input, [data-theme="dark"] select {
@@ -185,6 +195,7 @@
             flex-direction: column;
             align-items: center;
             gap: 5px;
+            flex: 1;
         }
 
         .timer-input label {
@@ -217,10 +228,11 @@
         }
 
         footer {
-            margin-top: 40px;
+            margin-top: 60px;
             text-align: center;
             color: var(--secondary-text);
             font-size: 14px;
+            padding: 20px;
         }
 
         .theme-toggle {
@@ -280,6 +292,7 @@
             background-color: var(--primary-color);
             border-radius: 4px;
             transition: width 0.5s ease;
+            width: 0%;
         }
 
         .countdown-info {
@@ -293,6 +306,28 @@
         .gaokao-card {
             background: var(--accent-bg);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            grid-column: span 4;
+        }
+
+        .time-card {
+            grid-column: span 4;
+        }
+
+        .timer-card {
+            grid-column: span 4;
+        }
+
+        .theme-card {
+            grid-column: span 3;
+        }
+
+        .sunset-card {
+            grid-column: span 3;
+        }
+
+        .quote-card {
+            grid-column: span 6;
+            background: var(--accent-bg);
         }
 
         .gaokao-date {
@@ -316,6 +351,74 @@
             color: var(--secondary-text);
             margin-bottom: 5px;
         }
+
+        .quote-content {
+            font-size: 20px;
+            font-style: italic;
+            text-align: center;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+
+        .quote-author {
+            text-align: right;
+            color: var(--secondary-text);
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .timer-progress-container {
+            margin: 20px 0;
+        }
+
+        .timer-progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            color: var(--secondary-text);
+            font-size: 14px;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            
+            .gaokao-card, .time-card, .timer-card {
+                grid-column: span 3;
+            }
+            
+            .theme-card, .sunset-card {
+                grid-column: span 3;
+            }
+            
+            .quote-card {
+                grid-column: span 6;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .gaokao-card, .time-card, .timer-card,
+            .theme-card, .sunset-card, .quote-card {
+                grid-column: span 1;
+            }
+            
+            .header h1 {
+                font-size: 42px;
+            }
+            
+            .time-display {
+                font-size: 54px;
+            }
+            
+            .timer-display {
+                font-size: 48px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -325,11 +428,10 @@
 
     <div class="header">
         <h1>It's Down's Time!</h1>
-        <p>时间管理，高效生活</p>
     </div>
 
     <div class="container">
-        <div class="card">
+        <div class="card time-card">
             <div class="card-title">
                 <i class="fas fa-clock"></i>
                 <span>当前时间</span>
@@ -338,7 +440,7 @@
             <div class="date-display" id="currentDate">2023年11月11日 星期六</div>
         </div>
 
-        <div class="card">
+        <div class="card timer-card">
             <div class="card-title">
                 <i class="fas fa-hourglass-half"></i>
                 <span>计时器</span>
@@ -358,6 +460,18 @@
                 </div>
             </div>
             <div class="timer-display" id="timerDisplay">00:00:00</div>
+            
+            <div class="timer-progress-container">
+                <div class="section-title">进度</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="timerProgress"></div>
+                </div>
+                <div class="timer-progress-info">
+                    <span id="timerElapsed">0%</span>
+                    <span id="timerRemaining">剩余: 00:00:00</span>
+                </div>
+            </div>
+            
             <div class="timer-controls">
                 <button id="startTimer">开始</button>
                 <button id="pauseTimer" disabled>暂停</button>
@@ -383,7 +497,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card theme-card">
             <div class="card-title">
                 <i class="fas fa-palette"></i>
                 <span>主题颜色</span>
@@ -398,7 +512,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card sunset-card">
             <div class="card-title">
                 <i class="fas fa-sun"></i>
                 <span>日出日落模式</span>
@@ -406,6 +520,17 @@
             <p>根据您的位置自动在日出和日落时切换明暗模式</p>
             <button id="getLocation">启用位置检测</button>
             <p id="locationStatus" style="text-align: center; margin-top: 10px; color: var(--secondary-text); font-size: 14px;">位置服务未启用</p>
+        </div>
+
+        <div class="card quote-card">
+            <div class="card-title">
+                <i class="fas fa-quote-left"></i>
+                <span>每日一言</span>
+            </div>
+            <div class="quote-content" id="dailyQuote">
+                时间是最宝贵的资源，你不能增加时间，但可以提高它的利用效率。
+            </div>
+            <div class="quote-author" id="quoteAuthor">— 史蒂夫·乔布斯</div>
         </div>
     </div>
 
@@ -435,6 +560,11 @@
         const gaokaoProgress = document.getElementById('gaokaoProgress');
         const daysPassed = document.getElementById('daysPassed');
         const daysLeft = document.getElementById('daysLeft');
+        const timerProgress = document.getElementById('timerProgress');
+        const timerElapsed = document.getElementById('timerElapsed');
+        const timerRemaining = document.getElementById('timerRemaining');
+        const dailyQuote = document.getElementById('dailyQuote');
+        const quoteAuthor = document.getElementById('quoteAuthor');
 
         // 全局变量
         let timerInterval = null;
@@ -445,12 +575,45 @@
         let userLocation = null;
         let isDarkMode = false;
 
+        // 每日一言数据
+        const quotes = [
+            {
+                text: "时间是最宝贵的资源，你不能增加时间，但可以提高它的利用效率。",
+                author: "史蒂夫·乔布斯"
+            },
+            {
+                text: "昨天是历史，明天是谜团，今天是礼物，所以它才被称为present。",
+                author: "功夫熊猫"
+            },
+            {
+                text: "时间不在于你拥有多少，而在于你怎样使用。",
+                author: "艾克"
+            },
+            {
+                text: "合理安排时间，就等于节约时间。",
+                author: "培根"
+            },
+            {
+                text: "时间就像海绵里的水，只要愿挤，总还是有的。",
+                author: "鲁迅"
+            },
+            {
+                text: "失去的东西，其实从来未曾真正地属于你，也不必惋惜。",
+                author: "亦舒"
+            },
+            {
+                text: "时间是一切财富中最宝贵的财富。",
+                author: "德奥弗拉斯多"
+            }
+        ];
+
         // 初始化
         function init() {
             updateTimeAndDate();
             setInterval(updateTimeAndDate, 1000);
             updateGaokaoCountdown();
             setInterval(updateGaokaoCountdown, 60000); // 每分钟更新一次
+            updateDailyQuote();
             
             // 设置事件监听器
             startTimerButton.addEventListener('click', startTimer);
@@ -520,6 +683,16 @@
             gaokaoProgress.style.width = `${progress}%`;
         }
 
+        // 更新每日一言
+        function updateDailyQuote() {
+            const today = new Date();
+            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            const quoteIndex = dayOfYear % quotes.length;
+            
+            dailyQuote.textContent = quotes[quoteIndex].text;
+            quoteAuthor.textContent = `— ${quotes[quoteIndex].author}`;
+        }
+
         // 验证时间输入
         function validateTimeInput(e) {
             const input = e.target;
@@ -547,6 +720,7 @@
                 if (totalSeconds <= 0) return;
                 
                 remainingSeconds = totalSeconds;
+                updateTimerProgress();
             }
             
             timerRunning = true;
@@ -592,6 +766,23 @@
             const seconds = remainingSeconds % 60;
             
             timerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // 更新进度
+            updateTimerProgress();
+        }
+
+        // 更新计时器进度
+        function updateTimerProgress() {
+            const progress = 100 - (remainingSeconds / totalSeconds * 100);
+            timerProgress.style.width = `${progress}%`;
+            timerElapsed.textContent = `${Math.round(progress)}%`;
+            
+            // 更新剩余时间
+            const hours = Math.floor(remainingSeconds / 3600);
+            const minutes = Math.floor((remainingSeconds % 3600) / 60);
+            const seconds = remainingSeconds % 60;
+            
+            timerRemaining.textContent = `剩余: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
         // 暂停计时器
@@ -618,6 +809,9 @@
             
             timerDisplay.textContent = "00:00:00";
             timerDisplay.classList.remove('timer-ended');
+            timerProgress.style.width = "0%";
+            timerElapsed.textContent = "0%";
+            timerRemaining.textContent = "剩余: 00:00:00";
             
             startTimerButton.disabled = false;
             pauseTimerButton.disabled = true;
