@@ -3,90 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>周课程表卡片 - Apple风格</title>
+    <title>课程表 - It's Down's Time!</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #007aff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --bg-color: #f5f7fa;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --nav-bg: rgba(255, 255, 255, 0.8);
+            --footer-bg: rgba(255, 255, 255, 0.9);
+        }
+
+        .dark-mode {
+            --primary-color: #0a84ff;
+            --text-primary: #f5f5f7;
+            --text-secondary: #a1a1a6;
+            --card-bg: rgba(30, 30, 32, 0.8);
+            --bg-color: #000000;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --nav-bg: rgba(30, 30, 32, 0.8);
+            --footer-bg: rgba(30, 30, 32, 0.9);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
         }
         
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: var(--bg-color);
+            color: var(--text-primary);
             min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
         }
-        
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background: rgba(255, 255, 255, 0.8);
+
+        /* 导航栏样式 */
+        .navbar {
+            background: var(--nav-bg);
             backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 24px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-        
-        .header {
+            padding: 16px 24px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         }
-        
-        .title {
-            font-size: 24px;
+
+        .navbar-title {
+            font-size: 22px;
             font-weight: 700;
-            color: #1d1d1f;
+            color: var(--primary-color);
         }
-        
+
+        .navbar-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 18px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(0, 122, 255, 0.1);
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        /* 日期选择器 */
         .date-selector {
             display: flex;
             gap: 8px;
+            overflow-x: auto;
+            padding: 16px 0;
+            margin-bottom: 16px;
+            scrollbar-width: none;
         }
-        
+
+        .date-selector::-webkit-scrollbar {
+            display: none;
+        }
+
         .day-btn {
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            font-size: 14px;
+            padding: 12px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 16px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         
         .day-btn.active {
-            background: #007aff;
+            background: var(--primary-color);
             color: white;
-            border-color: #007aff;
+            border-color: var(--primary-color);
         }
         
         .day-btn:hover:not(.active) {
             background: rgba(0, 122, 255, 0.1);
         }
         
-        .current-time {
-            font-size: 16px;
-            color: #86868b;
-            font-weight: 500;
-            text-align: right;
-            margin-top: 8px;
-        }
-        
+        /* 卡片样式 */
         .card {
-            background: white;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+            box-shadow: 0 10px 30px var(--shadow-color);
+            border: 1px solid var(--border-color);
             margin-bottom: 24px;
         }
         
@@ -98,56 +160,39 @@
         }
         
         .card-title {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 600;
-            color: #1d1d1f;
         }
         
-        .day-display {
+        .current-time {
             font-size: 16px;
-            color: #86868b;
+            color: var(--text-secondary);
             font-weight: 500;
         }
         
         .class-info {
-            margin-bottom: 16px;
+            margin-bottom: 24px;
         }
         
         .class-name {
             font-size: 28px;
             font-weight: 700;
-            color: #1d1d1f;
             margin-bottom: 8px;
-            transition: color 0.3s ease;
         }
         
         .class-time {
             font-size: 18px;
-            color: #86868b;
-            margin-bottom: 8px;
-        }
-        
-        .class-location {
-            display: flex;
-            align-items: center;
-            font-size: 16px;
-            color: #515154;
-        }
-        
-        .location-icon {
-            margin-right: 8px;
-            width: 16px;
-            height: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
         }
         
         .status-indicator {
             display: inline-block;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 20px;
             font-size: 14px;
             font-weight: 500;
             margin-top: 12px;
-            transition: all 0.3s ease;
         }
         
         .status-preparing {
@@ -167,27 +212,27 @@
         
         .countdown {
             font-size: 15px;
-            color: #86868b;
-            margin-top: 4px;
+            color: var(--text-secondary);
+            margin-top: 8px;
         }
         
+        /* 课程列表 */
         .schedule-list {
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            border-top: 1px solid var(--border-color);
             padding-top: 16px;
         }
         
         .schedule-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
-            color: #1d1d1f;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
         
         .schedule-item {
             display: flex;
             justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border-color);
         }
         
         .schedule-item:last-child {
@@ -195,39 +240,40 @@
         }
         
         .schedule-item-time {
-            color: #86868b;
-            font-size: 15px;
-            width: 100px;
+            color: var(--text-secondary);
+            font-size: 16px;
+            width: 120px;
         }
         
         .schedule-item-name {
-            color: #1d1d1f;
             font-weight: 500;
             flex-grow: 1;
-        }
-        
-        .schedule-item-location {
-            color: #86868b;
-            font-size: 15px;
-            width: 150px;
-            text-align: right;
-        }
-        
-        .highlight {
-            color: #007aff;
-            font-weight: 600;
         }
         
         .no-class {
             text-align: center;
             padding: 40px 0;
-            color: #86868b;
+            color: var(--text-secondary);
         }
         
         .no-class i {
             font-size: 40px;
             margin-bottom: 16px;
-            display: block;
+        }
+        
+        /* 页脚样式 */
+        .footer {
+            background: var(--footer-bg);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+        
+        .footer p {
+            margin: 4px 0;
         }
         
         /* 动画效果 */
@@ -242,112 +288,151 @@
         }
         
         /* 响应式设计 */
-        @media (max-width: 600px) {
-            .container {
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 14px 16px;
+            }
+            
+            .navbar-title {
+                font-size: 20px;
+            }
+            
+            .main-content {
                 padding: 16px;
             }
             
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
+            .card {
+                padding: 20px;
             }
             
-            .date-selector {
-                width: 100%;
-                overflow-x: auto;
-                padding-bottom: 8px;
+            .class-name {
+                font-size: 24px;
+            }
+            
+            .class-time {
+                font-size: 16px;
             }
             
             .schedule-item {
                 flex-direction: column;
-                gap: 4px;
+                gap: 6px;
             }
             
-            .schedule-item-time, .schedule-item-location {
+            .schedule-item-time {
                 width: 100%;
-                text-align: left;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .day-btn {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .current-time {
+                font-size: 14px;
+            }
+            
+            .class-name {
+                font-size: 22px;
+            }
+            
+            .status-indicator {
+                font-size: 13px;
+                padding: 6px 12px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="title">周课程表</div>
-            <div>
-                <div class="date-selector">
-                    <button class="day-btn" data-day="1">周一</button>
-                    <button class="day-btn" data-day="2">周二</button>
-                    <button class="day-btn" data-day="3">周三</button>
-                    <button class="day-btn" data-day="4">周四</button>
-                    <button class="day-btn" data-day="5">周五</button>
-                    <button class="day-btn" data-day="6">周六</button>
-                    <button class="day-btn" data-day="0">周日</button>
-                </div>
-                <div class="current-time" id="current-time">14:25:36</div>
-            </div>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-title">It's Down's Time!</div>
+        <div class="navbar-actions">
+            <button class="theme-toggle" id="theme-toggle">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
-        
-        <div class="card schedule-card">
-            <div class="card-header">
-                <div class="card-title">今日课程</div>
-                <div class="day-display" id="day-display">星期一</div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <div class="container">
+            <div class="date-selector">
+                <button class="day-btn" data-day="1">周一</button>
+                <button class="day-btn" data-day="2">周二</button>
+                <button class="day-btn" data-day="3">周三</button>
+                <button class="day-btn" data-day="4">周四</button>
+                <button class="day-btn" data-day="5">周五</button>
+                <button class="day-btn" data-day="6">周六</button>
+                <button class="day-btn" data-day="0">周日</button>
             </div>
             
-            <div class="class-info">
-                <div class="class-name" id="current-class-name">高等数学</div>
-                <div class="class-time" id="current-class-time">14:30 - 16:00</div>
-                <div class="class-location">
-                    <svg class="location-icon" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M8 0a5 5 0 0 0-5 5c0 5 5 10 5 10s5-5 5-10a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/>
-                    </svg>
-                    <span id="current-class-location">第一教学楼 302室</span>
+            <div class="card schedule-card">
+                <div class="card-header">
+                    <div class="card-title">今日课程</div>
+                    <div class="current-time" id="current-time">14:25:36</div>
                 </div>
-                <div class="status-indicator" id="status-indicator">预备中</div>
-                <div class="countdown" id="countdown">距离上课还有 5分钟</div>
-            </div>
-            
-            <div class="schedule-list">
-                <div class="schedule-title">课程安排</div>
-                <div class="schedule-items" id="schedule-items">
-                    <!-- 课程项将由JavaScript动态生成 -->
+                
+                <div class="class-info">
+                    <div class="class-name" id="current-class-name">高等数学</div>
+                    <div class="class-time" id="current-class-time">14:30 - 16:00</div>
+                    <div class="status-indicator" id="status-indicator">预备中</div>
+                    <div class="countdown" id="countdown">距离上课还有 5分钟</div>
+                </div>
+                
+                <div class="schedule-list">
+                    <div class="schedule-title">课程安排</div>
+                    <div class="schedule-items" id="schedule-items">
+                        <!-- 课程项将由JavaScript动态生成 -->
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>Powered by AtlanticAI</p>
+    </footer>
 
     <script>
         // 周课程表数据（0=周日，1=周一，...，6=周六）
         const weeklySchedule = {
             1: [ // 周一
-                { name: "高等数学", startTime: "08:00", endTime: "09:30", location: "第一教学楼 302室" },
-                { name: "大学英语", startTime: "10:00", endTime: "11:30", location: "外语楼 105室" },
-                { name: "程序设计", startTime: "14:30", endTime: "16:00", location: "计算机中心 203室" },
-                { name: "线性代数", startTime: "16:30", endTime: "18:00", location: "第二教学楼 401室" }
+                { name: "高等数学", startTime: "08:00", endTime: "09:30" },
+                { name: "大学英语", startTime: "10:00", endTime: "11:30" },
+                { name: "程序设计", startTime: "14:30", endTime: "16:00" },
+                { name: "线性代数", startTime: "16:30", endTime: "18:00" }
             ],
             2: [ // 周二
-                { name: "大学物理", startTime: "08:00", endTime: "09:30", location: "物理楼 201室" },
-                { name: "体育", startTime: "10:00", endTime: "11:30", location: "体育馆" },
-                { name: "计算机网络", startTime: "14:30", endTime: "16:00", location: "计算机中心 305室" }
+                { name: "大学物理", startTime: "08:00", endTime: "09:30" },
+                { name: "体育", startTime: "10:00", endTime: "11:30" },
+                { name: "计算机网络", startTime: "14:30", endTime: "16:00" }
             ],
             3: [ // 周三
-                { name: "数据结构", startTime: "08:00", endTime: "09:30", location: "计算机中心 102室" },
-                { name: "离散数学", startTime: "10:00", endTime: "11:30", location: "第二教学楼 203室" },
-                { name: "人工智能", startTime: "14:30", endTime: "16:00", location: "创新楼 501室" }
+                { name: "数据结构", startTime: "08:00", endTime: "09:30" },
+                { name: "离散数学", startTime: "10:00", endTime: "11:30" },
+                { name: "人工智能", startTime: "14:30", endTime: "16:00" }
             ],
             4: [ // 周四
-                { name: "操作系统", startTime: "08:00", endTime: "09:30", location: "计算机中心 405室" },
-                { name: "数据库原理", startTime: "10:00", endTime: "11:30", location: "计算机中心 302室" },
-                { name: "软件工程", startTime: "14:30", endTime: "16:00", location: "创新楼 301室" }
+                { name: "操作系统", startTime: "08:00", endTime: "09:30" },
+                { name: "数据库原理", startTime: "10:00", endTime: "11:30" },
+                { name: "软件工程", startTime: "14:30", endTime: "16:00" }
             ],
             5: [ // 周五
-                { name: "编译原理", startTime: "08:00", endTime: "09:30", location: "计算机中心 201室" },
-                { name: "计算机图形学", startTime: "10:00", endTime: "11:30", location: "计算机中心 403室" },
-                { name: "网络安全", startTime: "14:30", endTime: "16:00", location: "创新楼 402室" }
+                { name: "编译原理", startTime: "08:00", endTime: "09:30" },
+                { name: "计算机图形学", startTime: "10:00", endTime: "11:30" },
+                { name: "网络安全", startTime: "14:30", endTime: "16:00" }
             ],
             6: [ // 周六
-                { name: "创新创业实践", startTime: "09:00", endTime: "11:30", location: "创业中心" }
+                { name: "创新创业实践", startTime: "09:00", endTime: "11:30" }
             ],
             0: [ // 周日
                 // 没有课程
@@ -443,15 +528,10 @@
             const countdownEl = document.getElementById('countdown');
             const classNameEl = document.getElementById('current-class-name');
             const classTimeEl = document.getElementById('current-class-time');
-            const classLocationEl = document.getElementById('current-class-location');
-            
-            // 更新日期显示
-            document.getElementById('day-display').textContent = dayNames[currentDay];
             
             if (!daySchedule || daySchedule.length === 0) {
                 classNameEl.textContent = "今日无课程";
                 classTimeEl.textContent = "";
-                classLocationEl.textContent = "";
                 statusIndicator.textContent = "休息日";
                 statusIndicator.className = "status-indicator";
                 countdownEl.textContent = "放松一下，享受休息时间";
@@ -461,7 +541,6 @@
             if (!currentClassInfo) {
                 classNameEl.textContent = "今日课程已结束";
                 classTimeEl.textContent = "";
-                classLocationEl.textContent = "";
                 statusIndicator.textContent = "已完成";
                 statusIndicator.className = "status-indicator status-finished";
                 countdownEl.textContent = "放松一下，准备明天的课程吧";
@@ -472,7 +551,6 @@
             
             classNameEl.textContent = classItem.name;
             classTimeEl.textContent = `${classItem.startTime} - ${classItem.endTime}`;
-            classLocationEl.textContent = classItem.location;
             
             switch(status) {
                 case 'preparing':
@@ -522,7 +600,6 @@
                 itemEl.innerHTML = `
                     <div class="schedule-item-time">${classItem.startTime} - ${classItem.endTime}</div>
                     <div class="schedule-item-name">${classItem.name}</div>
-                    <div class="schedule-item-location">${classItem.location}</div>
                 `;
                 
                 scheduleItemsContainer.appendChild(itemEl);
@@ -554,9 +631,48 @@
             });
         }
 
+        // 暗黑模式切换
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const icon = themeToggle.querySelector('i');
+            
+            // 检查系统偏好
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.classList.add('dark-mode');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+            
+            // 切换主题
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                if (document.body.classList.contains('dark-mode')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+            
+            // 监听系统主题变化
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (e.matches) {
+                    document.body.classList.add('dark-mode');
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+        }
+
         // 初始化
         function init() {
             setupDaySelector();
+            setupThemeToggle();
             renderScheduleList();
             updateCardStatus();
             
