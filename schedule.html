@@ -442,7 +442,7 @@
                     <div class="class-name" id="current-class-name">高等数学</div>
                     <div class="class-time" id="current-class-time">14:30 - 16:00</div>
                     <div class="status-indicator" id="status-indicator">预备中</div>
-                    <div class="countdown" id="countdown">距离上课还有 5分钟</div>
+                    <div class="countdown" id="countdown">距离上课还有 5 分钟</div>
                 </div>
                 
                 <div class="schedule-list">
@@ -530,8 +530,8 @@
                 const startMinutes = timeToMinutes(classItem.startTime);
                 const endMinutes = timeToMinutes(classItem.endTime);
                 
-                // 如果当前时间在课程开始前15分钟内
-                if (currentMinutes >= startMinutes - 15 && currentMinutes < startMinutes) {
+                // 如果当前时间在课程开始前3分钟内
+                if (currentMinutes >= startMinutes - 3 && currentMinutes < startMinutes) {
                     return {
                         class: classItem,
                         status: 'preparing',
@@ -548,8 +548,8 @@
                     };
                 }
                 
-                // 如果当前时间在课程结束后15分钟内
-                if (currentMinutes >= endMinutes && currentMinutes < endMinutes + 15) {
+                // 如果当前时间在课程结束后1分钟内
+                if (currentMinutes >= endMinutes && currentMinutes < endMinutes + 1) {
                     return {
                         class: classItem,
                         status: 'finished',
@@ -613,22 +613,22 @@
                 case 'preparing':
                     statusIndicator.textContent = "预备中";
                     statusIndicator.className = "status-indicator status-preparing";
-                    countdownEl.textContent = `距离上课还有 ${minutesRemaining}分钟`;
+                    countdownEl.textContent = `距离上课还有 ${minutesRemaining} 分钟`;
                     break;
                 case 'ongoing':
                     statusIndicator.textContent = "上课中";
                     statusIndicator.className = "status-indicator status-ongoing pulse";
-                    countdownEl.textContent = `距离下课还有 ${minutesRemaining}分钟`;
+                    countdownEl.textContent = `距离下课还有 ${minutesRemaining} 分钟`;
                     break;
                 case 'finished':
                     statusIndicator.textContent = "已下课";
                     statusIndicator.className = "status-indicator status-finished";
-                    countdownEl.textContent = `课程结束 ${minutesRemaining}分钟`;
+                    countdownEl.textContent = `休息一下吧，记得复盘`;
                     break;
                 case 'waiting':
-                    statusIndicator.textContent = "等待中";
+                    statusIndicator.textContent = "休息中";
                     statusIndicator.className = "status-indicator status-waiting";
-                    countdownEl.textContent = `距离上课还有 ${minutesRemaining}分钟`;
+                    countdownEl.textContent = `舒活舒活筋骨，抖擞抖擞精神`;
                     break;
             }
         }
