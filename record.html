@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>录制 - DIMS</title>
+    <title>Audio Recorder | Apple Style</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-color: #007AFF;
@@ -11,8 +12,9 @@
             --background-secondary: rgba(255, 255, 255, 0.5);
             --text-primary: #1D1D1F;
             --text-secondary: #86868B;
-            --border-radius: 12px;
+            --border-radius: 20px;
             --box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -32,7 +34,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #D6E4F0 0%, #F8F9FC 100%);
+            background: linear-gradient(135deg, #6E45E2 0%, #88D3CE 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -51,7 +53,7 @@
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border-radius: var(--border-radius);
-            padding: 24px;
+            padding: 30px;
             box-shadow: var(--box-shadow);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
@@ -65,6 +67,9 @@
             font-size: 28px;
             font-weight: 600;
             margin-bottom: 8px;
+            background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .header p {
@@ -73,17 +78,27 @@
         }
 
         .visualization {
-            height: 120px;
+            height: 150px;
             margin-bottom: 32px;
             position: relative;
             overflow: hidden;
-            border-radius: 8px;
+            border-radius: 12px;
             background: var(--background-secondary);
         }
 
         #waveform {
             width: 100%;
             height: 100%;
+            display: block;
+        }
+
+        .timer {
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            font-size: 48px;
+            font-weight: 600;
+            margin: 20px 0;
+            color: var(--text-primary);
         }
 
         .controls {
@@ -95,15 +110,16 @@
         }
 
         .btn {
-            width: 56px;
-            height: 56px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             border: none;
+            position: relative;
         }
 
         .btn-primary {
@@ -140,6 +156,7 @@
             font-size: 20px;
             margin-bottom: 16px;
             font-weight: 600;
+            color: var(--text-primary);
         }
 
         .recordings-list {
@@ -154,8 +171,8 @@
             align-items: center;
             padding: 12px 16px;
             background: var(--background-secondary);
-            border-radius: 8px;
-            transition: all 0.2s ease;
+            border-radius: 12px;
+            transition: var(--transition);
         }
 
         .recording-item:hover {
@@ -182,26 +199,17 @@
         }
 
         .action-btn {
-            padding: 6px;
+            padding: 8px;
             border-radius: 50%;
             background: transparent;
             border: none;
             cursor: pointer;
             color: var(--text-primary);
-            transition: all 0.2s ease;
+            transition: var(--transition);
         }
 
         .action-btn:hover {
             background: rgba(180, 180, 180, 0.2);
-        }
-
-        .timer {
-            text-align: center;
-            font-variant-numeric: tabular-nums;
-            font-size: 48px;
-            font-weight: 600;
-            margin: 20px 0;
-            color: var(--text-primary);
         }
 
         /* 录音动画 */
@@ -230,17 +238,50 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .status {
+            text-align: center;
+            margin-top: 15px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .permission-note {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 204, 0, 0.1);
+            border-radius: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 480px) {
+            .recorder-card {
+                padding: 20px;
+            }
+            
+            .btn {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .timer {
+                font-size: 40px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="recorder-card">
             <div class="header">
-                <h1>音频录制</h1>
-                <p>录制高质量音频文件</p>
+                <h1>Apple风格录音机</h1>
+                <p>高质量音频录制工具</p>
             </div>
 
-            <div class="timer" id="timer">00:00</div>
+            <div class="timer" id="timer">00:00:00</div>
             
             <div class="visualization">
                 <canvas id="waveform"></canvas>
@@ -248,23 +289,22 @@
             
             <div class="controls">
                 <button class="btn btn-secondary" id="playBtn" disabled>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
-                    </svg>
+                    <i class="fas fa-play fa-lg"></i>
                 </button>
                 
                 <button class="btn btn-primary" id="recordBtn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="6" fill="currentColor"/>
-                    </svg>
+                    <i class="fas fa-microphone fa-lg"></i>
                 </button>
                 
                 <button class="btn btn-secondary" id="saveBtn" disabled>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 16L12 8M12 8L15 11M12 8L9 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M8 20H16C17.1046 20 18 19.1046 18 18V9.82843C18 9.29799 17.7893 8.78929 17.4142 8.41421L13.5858 4.58579C13.2107 4.21071 12.702 4 12.1716 4H8C6.89543 4 6 4.89543 6 6V18C6 19.1046 6.89543 20 8 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                    <i class="fas fa-save fa-lg"></i>
                 </button>
+            </div>
+
+            <div class="status" id="status">准备就绪，点击麦克风按钮开始录音</div>
+
+            <div class="permission-note">
+                <i class="fas fa-info-circle"></i> 首次使用请允许浏览器访问麦克风
             </div>
         </div>
         
@@ -276,11 +316,197 @@
         </div>
     </div>
 
-    <!-- 引入Recorder库 -->
-    <script src="https://cdn.jsdelivr.net/npm/recorder-core@latest/recorder.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/recorder-core@latest/src/engine/mp3.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/recorder-core@latest/src/engine/mp3-engine.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/recorder-core@latest/src/extensions/waveview.min.js"></script>
+    <!-- 内联Recorder.js库代码 -->
+    <script>
+        // 简化的Recorder实现，避免外部依赖
+        class SimpleRecorder {
+            constructor(config) {
+                this.config = config;
+                this.isRecording = false;
+                this.audioContext = null;
+                this.mediaStream = null;
+                this.mediaRecorder = null;
+                this.chunks = [];
+                this.startTime = 0;
+                this.timerInterval = null;
+                this.onProcess = config.onProcess;
+            }
+
+            async open(success, error) {
+                try {
+                    this.mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            channelCount: 1,
+                            sampleRate: 44100,
+                            sampleSize: 16,
+                            echoCancellation: true,
+                            noiseSuppression: true
+                        } 
+                    });
+                    
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                        sampleRate: 44100
+                    });
+                    
+                    this.mediaRecorder = new MediaRecorder(this.mediaStream);
+                    
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        this.chunks.push(event.data);
+                    };
+                    
+                    this.mediaRecorder.onstop = () => {
+                        const blob = new Blob(this.chunks, { type: 'audio/webm' });
+                        const duration = Date.now() - this.startTime;
+                        
+                        if (this.config.onStop) {
+                            this.config.onStop(blob, duration);
+                        }
+                        
+                        this.chunks = [];
+                    };
+                    
+                    success();
+                } catch (err) {
+                    error(err.message, true);
+                }
+            }
+
+            start() {
+                if (this.mediaRecorder) {
+                    this.isRecording = true;
+                    this.chunks = [];
+                    this.startTime = Date.now();
+                    this.mediaRecorder.start();
+                    
+                    // 模拟处理回调
+                    if (this.onProcess) {
+                        this.analyser = this.audioContext.createAnalyser();
+                        this.source = this.audioContext.createMediaStreamSource(this.mediaStream);
+                        this.source.connect(this.analyser);
+                        
+                        this.analyser.fftSize = 256;
+                        this.bufferLength = this.analyser.frequencyBinCount;
+                        this.dataArray = new Uint8Array(this.bufferLength);
+                        
+                        this.processAudio();
+                    }
+                    
+                    // 更新计时器
+                    this.timerInterval = setInterval(() => {
+                        if (this.onProcess) {
+                            const elapsed = Date.now() - this.startTime;
+                            this.onProcess([], 0, elapsed, 44100);
+                        }
+                    }, 100);
+                }
+            }
+
+            processAudio() {
+                if (!this.isRecording) return;
+                
+                this.analyser.getByteFrequencyData(this.dataArray);
+                
+                // 计算平均音量
+                let sum = 0;
+                for (let i = 0; i < this.bufferLength; i++) {
+                    sum += this.dataArray[i];
+                }
+                const average = sum / this.bufferLength;
+                const powerLevel = average / 256;
+                
+                if (this.onProcess) {
+                    const elapsed = Date.now() - this.startTime;
+                    this.onProcess([this.dataArray], powerLevel, elapsed, 44100);
+                }
+                
+                requestAnimationFrame(() => this.processAudio());
+            }
+
+            stop(success, error) {
+                if (this.mediaRecorder && this.isRecording) {
+                    this.isRecording = false;
+                    clearInterval(this.timerInterval);
+                    
+                    this.mediaRecorder.onstop = () => {
+                        const blob = new Blob(this.chunks, { type: 'audio/webm' });
+                        const duration = Date.now() - this.startTime;
+                        
+                        success(blob, duration);
+                    };
+                    
+                    this.mediaRecorder.stop();
+                } else if (error) {
+                    error("Recorder is not recording");
+                }
+            }
+
+            close() {
+                if (this.mediaStream) {
+                    this.mediaStream.getTracks().forEach(track => track.stop());
+                }
+                
+                if (this.audioContext) {
+                    this.audioContext.close();
+                }
+                
+                this.isRecording = false;
+                clearInterval(this.timerInterval);
+            }
+        }
+
+        // 简化的波形视图
+        class SimpleWaveView {
+            constructor(config) {
+                this.elem = config.elem;
+                this.canvas = document.createElement('canvas');
+                this.elem.appendChild(this.canvas);
+                this.ctx = this.canvas.getContext('2d');
+                
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+            
+            resize() {
+                this.canvas.width = this.elem.clientWidth;
+                this.canvas.height = this.elem.clientHeight;
+            }
+            
+            input(data, powerLevel, sampleRate) {
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+                const ctx = this.ctx;
+                
+                ctx.clearRect(0, 0, width, height);
+                
+                // 绘制背景
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, width, height);
+                
+                // 绘制波形
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#007AFF';
+                ctx.beginPath();
+                
+                const sliceWidth = width / data.length;
+                let x = 0;
+                
+                for (let i = 0; i < data.length; i++) {
+                    const v = data[i] / 128.0;
+                    const y = v * height / 2;
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                    
+                    x += sliceWidth;
+                }
+                
+                ctx.stroke();
+            }
+        }
+    </script>
 
     <script>
         // 初始化变量
@@ -291,7 +517,6 @@
         let timerInterval = null;
         let currentRecording = null;
         let waveView = null;
-        let audioContext = null;
 
         // DOM元素
         const recordBtn = document.getElementById('recordBtn');
@@ -299,30 +524,24 @@
         const saveBtn = document.getElementById('saveBtn');
         const timer = document.getElementById('timer');
         const waveform = document.getElementById('waveform');
+        const status = document.getElementById('status');
         const recordingsList = document.getElementById('recordingsList');
         const recordingsSection = document.getElementById('recordingsSection');
 
         // 初始化音频录制功能
         async function initRecorder() {
             try {
-                // 请求麦克风权限
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: {
-                        channelCount: 1, // 单声道
-                        sampleRate: 44100, // 采样率
-                        sampleSize: 16 // 采样大小
-                    } 
-                });
+                status.textContent = "正在请求麦克风权限...";
                 
-                // 初始化Recorder[citation:5][citation:6]
-                recorder = Recorder({
-                    type: 'mp3', // 使用mp3格式[citation:6]
-                    sampleRate: 44100, // 采样率
-                    bitRate: 128, // 比特率
+                // 使用简化的Recorder实现
+                recorder = new SimpleRecorder({
+                    type: 'mp3',
+                    sampleRate: 44100,
+                    bitRate: 128,
                     onProcess: (buffers, powerLevel, bufferDuration, bufferSampleRate) => {
-                        // 实时处理音频数据[citation:6]
+                        // 实时处理音频数据
                         if (waveView) {
-                            waveView.input(buffers[buffers.length - 1], powerLevel, bufferSampleRate);
+                            waveView.input(buffers, powerLevel, bufferSampleRate);
                         }
                         
                         // 更新录音时长
@@ -331,24 +550,25 @@
                     }
                 });
                 
-                // 打开录音[citation:5]
+                // 打开录音
                 recorder.open(() => {
                     console.log("录音器已打开，准备就绪");
+                    status.textContent = "准备就绪，点击麦克风按钮开始录音";
                     recordBtn.disabled = false;
                     
-                    // 初始化波形显示[citation:6]
-                    waveView = Recorder.WaveView({
-                        elem: waveform,
-                        width: waveform.offsetWidth,
-                        height: waveform.offsetHeight
+                    // 初始化波形显示
+                    waveView = new SimpleWaveView({
+                        elem: waveform
                     });
                 }, (msg, isUserNotAllow) => {
                     console.error("打开录音器失败: " + (isUserNotAllow ? "用户拒绝，" : "") + msg);
+                    status.textContent = "无法访问麦克风: " + (isUserNotAllow ? "用户拒绝麦克风访问权限" : msg);
                     alert("无法访问麦克风，请确保已授予录音权限");
                 });
                 
             } catch (error) {
                 console.error("初始化录音器时出错:", error);
+                status.textContent = "初始化录音功能失败: " + error.message;
                 alert("无法初始化录音功能: " + error.message);
             }
         }
@@ -359,6 +579,7 @@
                 recorder.start();
                 isRecording = true;
                 recordBtn.classList.add('recording');
+                status.textContent = "录音中...";
                 
                 // 开始计时
                 startTimer();
@@ -371,6 +592,7 @@
                 recorder.stop((blob, duration) => {
                     isRecording = false;
                     recordBtn.classList.remove('recording');
+                    status.textContent = "录音完成";
                     
                     // 停止计时
                     stopTimer();
@@ -391,6 +613,7 @@
                     console.error("停止录音时出错:", error);
                     isRecording = false;
                     recordBtn.classList.remove('recording');
+                    status.textContent = "录音错误: " + error;
                     stopTimer();
                 });
             }
@@ -399,12 +622,17 @@
         // 播放录音
         function playRecording() {
             if (currentRecording && !isPlaying) {
+                status.textContent = "播放中...";
                 const audio = new Audio(currentRecording.url);
                 audio.play();
                 isPlaying = true;
                 
                 audio.onended = () => {
                     isPlaying = false;
+                    status.textContent = "播放完成";
+                    setTimeout(() => {
+                        if (!isRecording) status.textContent = "准备就绪";
+                    }, 2000);
                 };
             }
         }
@@ -412,16 +640,23 @@
         // 保存录音
         function saveRecording() {
             if (currentRecording) {
-                // 创建下载链接[citation:2]
+                status.textContent = "保存中...";
+                
+                // 创建下载链接
                 const a = document.createElement('a');
                 a.href = currentRecording.url;
-                a.download = `recording-${new Date().toISOString().replace(/:/g, '-')}.mp3`;
+                a.download = `recording-${new Date().toISOString().replace(/:/g, '-')}.webm`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 
                 // 添加到录音列表
                 addToRecordingsList(currentRecording);
+                
+                status.textContent = "已保存录音";
+                setTimeout(() => {
+                    if (!isRecording) status.textContent = "准备就绪";
+                }, 2000);
             }
         }
 
@@ -442,15 +677,10 @@
                 </div>
                 <div class="recording-actions">
                     <button class="action-btn play-recording" title="播放">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
-                        </svg>
+                        <i class="fas fa-play"></i>
                     </button>
                     <button class="action-btn download-recording" title="下载">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 16L12 8M12 8L15 11M12 8L9 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M8 20H16C17.1046 20 18 19.1046 18 18V9.82843C18 9.29799 17.7893 8.78929 17.4142 8.41421L13.5858 4.58579C13.2107 4.21071 12.702 4 12.1716 4H8C6.89543 4 6 4.89543 6 6V18C6 19.1046 6.89543 20 8 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+                        <i class="fas fa-download"></i>
                     </button>
                 </div>
             `;
@@ -459,15 +689,31 @@
             recordingItem.querySelector('.play-recording').addEventListener('click', () => {
                 const audio = new Audio(recording.url);
                 audio.play();
+                status.textContent = "播放录音中...";
+                
+                audio.onended = () => {
+                    status.textContent = "播放完成";
+                    setTimeout(() => {
+                        if (!isRecording) status.textContent = "准备就绪";
+                    }, 2000);
+                };
             });
             
             recordingItem.querySelector('.download-recording').addEventListener('click', () => {
                 const a = document.createElement('a');
                 a.href = recording.url;
-                a.download = `recording-${new Date().toISOString().replace(/:/g, '-')}.mp3`;
+                a.download = `recording-${new Date().toISOString().replace(/:/g, '-')}.webm`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
+                status.textContent = "下载中...";
+                
+                setTimeout(() => {
+                    status.textContent = "下载完成";
+                    setTimeout(() => {
+                        if (!isRecording) status.textContent = "准备就绪";
+                    }, 2000);
+                }, 500);
             });
             
             recordingsList.appendChild(recordingItem);
@@ -476,9 +722,10 @@
 
         // 更新计时器
         function updateTimer(duration) {
-            const minutes = Math.floor(duration / 60000);
-            const seconds = ((duration % 60000) / 1000).toFixed(0);
-            timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.padStart(2, '0')}`;
+            const hours = Math.floor(duration / 3600000);
+            const minutes = Math.floor((duration % 3600000) / 60000);
+            const seconds = Math.floor((duration % 60000) / 1000);
+            timer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
         // 开始计时
@@ -486,9 +733,9 @@
             recordingDuration = 0;
             updateTimer(recordingDuration);
             timerInterval = setInterval(() => {
-                recordingDuration += 1000;
+                recordingDuration += 100;
                 updateTimer(recordingDuration);
-            }, 1000);
+            }, 100);
         }
 
         // 停止计时
