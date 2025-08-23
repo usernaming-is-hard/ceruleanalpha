@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>录制 - DIMS</title>
+    <style>
+        :root {
+            --primary-color: #007AFF;
+            --background-primary: rgba(255, 255, 255, 0.8);
+            --background-secondary: rgba(255, 255, 255, 0.5);
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background-primary: rgba(44, 44, 46, 0.8);
+                --background-secondary: rgba(44, 44, 46, 0.5);
+                --text-primary: #F5F5F7;
+                --text-secondary: #86868B;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #D6E4F0 0%, #F8F9FC 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .recorder-card {
+            background: var(--background-primary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--box-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .visualization {
+            height: 120px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            background: var(--background-secondary);
+        }
+
+        #waveform {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--background-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(180, 180, 180, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .recordings {
+            margin-top: 32px;
+        }
+
+        .recordings h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .recordings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .recording-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--background-secondary);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .recording-item:hover {
+            background: rgba(180, 180, 180, 0.2);
+        }
+
+        .recording-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .recording-title {
+            font-weight: 500;
+        }
+
+        .recording-duration {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .recording-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(180, 180, 180, 0.2);
+        }
+
+        .timer {
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            font-size: 48px;
+            font-weight: 600;
+            margin: 20px 0;
+            color: var(--text-primary);
+        }
+
+        /* 录音动画 */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 59, 48, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
+        }
+
+        .recording .btn-primary {
+            background: #FF3B30;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* 加载动画 */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="recorder-card">
+            <div class="header">
+                <h1>音频录制</h1>
+                <p>录制高质量音频文件</p>
+            </div>
+
+            <div class="timer" id="timer">00:00</div>
+            
+            <div class="visualization">
+                <canvas id="waveform"></canvas>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-secondary" id="playBtn" disabled>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
+                    </svg>
+                </button>
+                
+                <button class="btn btn-primary" id="recordBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="6" fill="currentColor"/>
+                    </svg>
+                </button>
+                
+                <button class="btn btn-secondary" id="saveBtn" disabled>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 16L12 8M12 8L15 11M12 8L9 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 20H16C17.1046 20 18 19.1046 18 18V9.82843C18 9.29799 17.7893 8.78929 17.4142 8.41421L13.5858 4.58579C13.2107 4.21071 12.702 4 12.1716 4H8C6.89543 4 6 4.89543 6 6V18C6 19.1046 6.89543 20 8 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="recordings" id="recordingsSection" style="display: none;">
+            <h2>录制文件</h2>
+            <div class="recordings-list" id="recordingsList">
+                <!-- 录音文件将在这里动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入Recorder库 -->
+    <script src="https://cdn.jsdelivr.net/npm/recorder-core@latest/recorder.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/recorder-core@latest/src/engine/mp3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/recorder-core@latest/src/engine/mp3-engine.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/recorder-core@latest/src/extensions/waveview.min.js"></script>
+
+    <script>
+        // 初始化变量
+        let recorder = null;
+        let isRecording = false;
+        let isPlaying = false;
+        let recordingDuration = 0;
+        let timerInterval = null;
+        let currentRecording = null;
+        let waveView = null;
+        let audioContext = null;
+
+        // DOM元素
+        const recordBtn = document.getElementById('recordBtn');
+        const playBtn = document.getElementById('playBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const timer = document.getElementById('timer');
+        const waveform = document.getElementById('waveform');
+        const recordingsList = document.getElementById('recordingsList');
+        const recordingsSection = document.getElementById('recordingsSection');
+
+        // 初始化音频录制功能
+        async function initRecorder() {
+            try {
+                // 请求麦克风权限
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        channelCount: 1, // 单声道
+                        sampleRate: 44100, // 采样率
+                        sampleSize: 16 // 采样大小
+                    } 
+                });
+                
+                // 初始化Recorder[citation:5][citation:6]
+                recorder = Recorder({
+                    type: 'mp3', // 使用mp3格式[citation:6]
+                    sampleRate: 44100, // 采样率
+                    bitRate: 128, // 比特率
+                    onProcess: (buffers, powerLevel, bufferDuration, bufferSampleRate) => {
+                        // 实时处理音频数据[citation:6]
+                        if (waveView) {
+                            waveView.input(buffers[buffers.length - 1], powerLevel, bufferSampleRate);
+                        }
+                        
+                        // 更新录音时长
+                        recordingDuration = bufferDuration;
+                        updateTimer(bufferDuration);
+                    }
+                });
+                
+                // 打开录音[citation:5]
+                recorder.open(() => {
+                    console.log("录音器已打开，准备就绪");
+                    recordBtn.disabled = false;
+                    
+                    // 初始化波形显示[citation:6]
+                    waveView = Recorder.WaveView({
+                        elem: waveform,
+                        width: waveform.offsetWidth,
+                        height: waveform.offsetHeight
+                    });
+                }, (msg, isUserNotAllow) => {
+                    console.error("打开录音器失败: " + (isUserNotAllow ? "用户拒绝，" : "") + msg);
+                    alert("无法访问麦克风，请确保已授予录音权限");
+                });
+                
+            } catch (error) {
+                console.error("初始化录音器时出错:", error);
+                alert("无法初始化录音功能: " + error.message);
+            }
+        }
+
+        // 开始录音
+        function startRecording() {
+            if (recorder && !isRecording) {
+                recorder.start();
+                isRecording = true;
+                recordBtn.classList.add('recording');
+                
+                // 开始计时
+                startTimer();
+            }
+        }
+
+        // 停止录音
+        function stopRecording() {
+            if (recorder && isRecording) {
+                recorder.stop((blob, duration) => {
+                    isRecording = false;
+                    recordBtn.classList.remove('recording');
+                    
+                    // 停止计时
+                    stopTimer();
+                    
+                    // 保存当前录音
+                    currentRecording = {
+                        blob: blob,
+                        duration: duration,
+                        url: URL.createObjectURL(blob)
+                    };
+                    
+                    // 启用播放和保存按钮
+                    playBtn.disabled = false;
+                    saveBtn.disabled = false;
+                    
+                    console.log("录音完成，时长: " + duration + "ms");
+                }, (error) => {
+                    console.error("停止录音时出错:", error);
+                    isRecording = false;
+                    recordBtn.classList.remove('recording');
+                    stopTimer();
+                });
+            }
+        }
+
+        // 播放录音
+        function playRecording() {
+            if (currentRecording && !isPlaying) {
+                const audio = new Audio(currentRecording.url);
+                audio.play();
+                isPlaying = true;
+                
+                audio.onended = () => {
+                    isPlaying = false;
+                };
+            }
+        }
+
+        // 保存录音
+        function saveRecording() {
+            if (currentRecording) {
+                // 创建下载链接[citation:2]
+                const a = document.createElement('a');
+                a.href = currentRecording.url;
+                a.download = `recording-${new Date().toISOString().replace(/:/g, '-')}.mp3`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // 添加到录音列表
+                addToRecordingsList(currentRecording);
+            }
+        }
+
+        // 添加录音到列表
+        function addToRecordingsList(recording) {
+            const recordingItem = document.createElement('div');
+            recordingItem.className = 'recording-item';
+            
+            // 格式化时间
+            const minutes = Math.floor(recording.duration / 60000);
+            const seconds = ((recording.duration % 60000) / 1000).toFixed(0);
+            const durationText = `${minutes}:${seconds.padStart(2, '0')}`;
+            
+            recordingItem.innerHTML = `
+                <div class="recording-info">
+                    <span class="recording-title">录制 ${new Date().toLocaleTimeString()}</span>
+                    <span class="recording-duration">${durationText}</span>
+                </div>
+                <div class="recording-actions">
+                    <button class="action-btn play-recording" title="播放">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                    <button class="action-btn download-recording" title="下载">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 16L12 8M12 8L15 11M12 8L9 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M8 20H16C17.1046 20 18 19.1046 18 18V9.82843C18 9.29799 17.7893 8.78929 17.4142 8.41421L13.5858 4.58579C13.2107 4.21071 12.702 4 12.1716 4H8C6.89543 4 6 4.89543 6 6V18C6 19.1046 6.89543 20 8 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            // 添加事件监听器
+            recordingItem.querySelector('.play-recording').addEventListener('click', () => {
+                const audio = new Audio(recording.url);
+                audio.play();
+            });
+            
+            recordingItem.querySelector('.download-recording').addEventListener('click', () => {
+                const a = document.createElement('a');
+                a.href = recording.url;
+                a.download = `recording-${new Date().toISOString().replace(/:/g, '-')}.mp3`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+            
+            recordingsList.appendChild(recordingItem);
+            recordingsSection.style.display = 'block';
+        }
+
+        // 更新计时器
+        function updateTimer(duration) {
+            const minutes = Math.floor(duration / 60000);
+            const seconds = ((duration % 60000) / 1000).toFixed(0);
+            timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.padStart(2, '0')}`;
+        }
+
+        // 开始计时
+        function startTimer() {
+            recordingDuration = 0;
+            updateTimer(recordingDuration);
+            timerInterval = setInterval(() => {
+                recordingDuration += 1000;
+                updateTimer(recordingDuration);
+            }, 1000);
+        }
+
+        // 停止计时
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        // 事件监听器
+        recordBtn.addEventListener('click', () => {
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        });
+
+        playBtn.addEventListener('click', playRecording);
+        saveBtn.addEventListener('click', saveRecording);
+
+        // 初始化应用
+        window.addEventListener('load', initRecorder);
+    </script>
+</body>
+</html>
